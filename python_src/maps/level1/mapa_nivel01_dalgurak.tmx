@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="16" tileheight="16" nextobjectid="110">
+ <properties>
+  <property name="InitialCoords" value="224,112"/>
+  <property name="InitialScreen" value="0,0"/>
+  <property name="script-0_0" value="ACTION_FX, 1, ACTION_PLAYER"/>
+  <property name="string-0" value="JARKUM, VE A LA FORTALEZA DE KASHGAR. BUSCA LOS MONOLITOS, Y ESCUCHA LA VOZ DE NUESTROS ANTEPASADOS."/>
+  <property name="string-0-en" value="JARKUM, GO TO THE FORTRESS OF KASHGAR, FIND THE MONOLITHS, AND LISTEN TO THE VOICE OF OUR ANCESTORS."/>
+  <property name="string-1" value="ESCUCHA Y APRENDE. DAL GURAK, EL ENEMIGO, A QUIEN TUS ANTEPASADOS CREYERON DERROTADO, HA RESURGIDO DE LAS TINIEBLAS Y SE HACE FUERTE DE NUEVO. DEBES SEGUIR LOS PASOS DE TUKARAM Y RECLAMAR LA ESPADA DE IANNA, QUE EN SU DIA LE FUE CONCEDIDA POR LA DIOSA. ES LA UNICA FORMA DE DEVOLVER AL ENEMIGO AL INFIERNO QUE NUNCA DEBIO ABANDONAR. VE A LAS TUMBAS DE EPHYRA, ALLI TE SERA REVELADO EL CAMINO A TU DESTINO."/>
+  <property name="string-1-en" value="LISTEN CAREFULLY. DAL GURAK, THE ENEMY, WHOM YOUR ANCESTORS THOUGHT DEFEATED, HAS SURGED AGAIN FROM THE DARKNESS AND AGAIN IS GROWING STRONG. YOU MUST FOLLOW TURAKAM'S STEPS AND RECLAIM THE SWORD OF IANNA, WHICH WAS GIFTED TO HIM BY THE GODDESS. THIS IS THE ONLY WAY TO SEND THE ENEMY BACK TO THE HELL HE SHOULD HAD NEVER LEFT. GO TO THE TOMBS OF EPHYRA, WHERE THE WAY TO YOUR FATE WILL BE REVEALED TO YOU."/>
+ </properties>
+ <tileset firstgid="1" name="STILES" tilewidth="16" tileheight="16" tilecount="256" columns="16">
+  <image source="tiles_nivel01.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="257" name="Durezas" tilewidth="16" tileheight="16" tilecount="4" columns="4">
+  <image source="tiles_durezas.png" width="64" height="16"/>
+ </tileset>
+ <tileset firstgid="261" name="Objetos" tilewidth="16" tileheight="16" tilecount="192" columns="16">
+  <image source="tiles_objetos.png" width="256" height="192"/>
+ </tileset>
+ <tileset firstgid="453" name="divisiones" tilewidth="16" tileheight="16" tilecount="9" columns="3">
+  <image source="divisiones.png" width="48" height="48"/>
+ </tileset>
+ <layer name="Fondo" width="16" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjZ2BgYAJiZiBmAWJ2IOYAYk4g5gLiJigNwspI4kpQPkgPK5I4C9QskDwjEZgTyWwYn5NIvTBMrF3YsBAeOTEgFgFiUTxqNCh0qzYB8wlhYQr0grAqhfr5gViATBqEAR2OBGY=
+  </data>
+ </layer>
+ <objectgroup name="Objetos" opacity="0.98">
+  <object id="31" name="F1 -enemy 1" gid="261" x="16" y="112" width="16" height="16">
+   <properties>
+    <property name="energy" value="6"/>
+    <property name="objid" value="30"/>
+    <property name="objtype" value="enemy_dalgurak"/>
+    <property name="script" value="ACTION_PATROL, FLAG_PATROL_NONE, ACTION_FIGHT, FLAG_FIGHT_NONE, ACTION_NONE"/>
+    <property name="scriptid" value="3"/>
+   </properties>
+  </object>
+  <object id="109" name="F1 - arma 2" gid="261" x="128" y="16" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="2"/>
+    <property name="objtype" value="box_jar"/>
+    <property name="script" value="ACTION_ENERGY, -10, ACTION_NONE"/>
+    <property name="scriptid" value="3"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer name="Dureza" width="16" height="10" opacity="0.66">
+  <data encoding="base64" compression="zlib">
+   eJxjYmRgYKICZiQDU6KXHvqZkTAt7cdl/kD7n1j9lGAA3UMBeg==
+  </data>
+ </layer>
+ <layer name="Divisiones" width="16" height="10" opacity="0.49">
+  <data encoding="base64" compression="zlib">
+   eJw7ysjAcIxMfByITwDxSTLxqVH9Q17/aSA+QyY+C8QAaUp+QQ==
+  </data>
+ </layer>
+</map>

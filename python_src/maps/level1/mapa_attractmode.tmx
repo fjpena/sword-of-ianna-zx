@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="64" height="20" tilewidth="16" tileheight="16" nextobjectid="109">
+ <properties>
+  <property name="InitialCoords" value="16,96"/>
+  <property name="InitialScreen" value="0,1"/>
+  <property name="script-0_0" value="ACTION_WAIT, 4, ACTION_MOVE, 20, 12, ACTION_MOVE, 5, 2, ACTION_WAIT, 32, ACTION_FINISH_LEVEL, 0, ACTION_PLAYER"/>
+  <property name="script-0_1" value="ACTION_IDLE,ACTION_WAIT, 1, ACTION_MOVE, 24, 32, ACTION_PLAYER"/>
+  <property name="script-1_0" value="ACTION_IDLE, ACTION_WAIT, 1, ACTION_MOVE, 20, 5, ACTION_WAIT, 4, ACTION_MOVE, 1, 4, ACTION_WAIT, 4, ACTION_MOVE, 20, 32, ACTION_PLAYER"/>
+  <property name="script-1_1" value="ACTION_IDLE,ACTION_WAIT, 1, ACTION_MOVE, 8, 38, ACTION_WAIT, 3, ACTION_MOVE, 4, 1, ACTION_WAIT, 4, ACTION_MOVE, 2, 2, ACTION_WAIT, 6, ACTION_MOVE, 2, 2, ACTION_WAIT, 6, ACTION_MOVE, 8, 32,ACTION_PLAYER"/>
+  <property name="script-2_0" value="ACTION_MOVE, 1, 4, ACTION_IDLE, ACTION_WAIT, 1, ACTION_MOVE, 20, 16, ACTION_WAIT, 4, ACTION_MOVE, 32, 1, ACTION_WAIT, 4, ACTION_MOVE, 17, 1, ACTION_WAIT, 4, ACTION_MOVE, 32, 1, ACTION_MOVE, 20, 16, ACTION_PLAYER"/>
+  <property name="script-2_1" value="ACTION_IDLE,ACTION_WAIT, 1, ACTION_MOVE, 8, 54, ACTION_WAIT, 3, ACTION_MOVE, 1, 6, ACTION_WAIT, 4, ACTION_MOVE, 5, 2, ACTION_WAIT, 16, ACTION_MOVE, 1, 16, ACTION_PLAYER"/>
+  <property name="string-0" value="TEST."/>
+  <property name="string-0-en" value="TEST."/>
+ </properties>
+ <tileset firstgid="1" name="STILES" tilewidth="16" tileheight="16" tilecount="256">
+  <image source="tiles_nivel01.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="257" name="Durezas" tilewidth="16" tileheight="16" tilecount="4">
+  <image source="tiles_durezas.png" width="64" height="16"/>
+ </tileset>
+ <tileset firstgid="261" name="Objetos" tilewidth="16" tileheight="16" tilecount="192">
+  <image source="tiles_objetos.png" width="256" height="192"/>
+ </tileset>
+ <tileset firstgid="453" name="divisiones" tilewidth="16" tileheight="16" tilecount="9">
+  <image source="divisiones.png" width="48" height="48"/>
+ </tileset>
+ <layer name="Fondo" width="64" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzNV8lOAzEMzZRC2dcCBSSgZRGUTYIL8AEgsXwFy/9fWC6lOJKfZEycSckI9fAa17HjJU7iaTjnaoQRQp3QIIwTJgiTYuwQdgL/Lf6E4tfUuneEe8Ii264p+6P8H/LjLNdg/hjTDcP/VP06y0KuznI+jqIC6Px4eoHj3hO0tq/zKXlytPxP1Zd+FYJXRewh9Ai7av9Bd4R91FYh+DvuZ07hb8j/VP3CVbfXKbglNDkHcv8PeOwlrtNneehvEbbViDnkV8tgPtWmxxRhmjBHmA+MM4TZhHVgG+fhSPi5UaJ7yvk7EHlsBgCZB8JjZP6mxB5y5uOW9x5qJ8Qrywf89tgkLAneeuJerAr6i3BOuOCxH5DxP5DpibzHbKywX30jx4Ng2bBh7aElD7QE3VVz3RKZW5H3snpbYLljQjtxbwZB+4/rtjJkDl16vUFu2OJfy5Bp875a91jKCBrYF8hdT9L+ngydBcv/EK31cf/m9k9V6+u+BX5a8S+W2Eftan3wc/unqvUL97M/gZ/WubyK2Md7Gnrf+6yf2z9VrS/h/X4iPBvxY/9PDPu430Pve5d1oS/n/rMfjMG/US+EVxeuf8Rn6ZfVjp9bjegPA3SvDqAv8TH4t6xt6OMM6PyhrlLe0GGFr/9LF38/0ftq/gvvfZXx628Df7ZS+ri/AvffID0jaqfJsaf0ELEYZaygcS/FzmZujlHXVxlrtdzvngPfK/hGhD3IyDu9EPSSiPtM+Fd13LgPdnm8zlhzLRC3fqN8PG+Ed8IH4dP4j9jfBf3o0vo9TYf6wZAfuv+zbMX6y2/VNVSz
+  </data>
+ </layer>
+ <objectgroup name="Objetos">
+  <object id="31" name="F1 -enemy 30" gid="261" x="48" y="128" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="30"/>
+    <property name="objtype" value="enemy_squeleton"/>
+    <property name="script" value="ACTION_PATROL, FLAG_PATROL_NONE, ACTION_FIGHT, FLAG_FIGHT_NONE"/>
+    <property name="scriptid" value="3"/>
+   </properties>
+  </object>
+  <object id="32" name="F1 - enemy 31" gid="261" x="800" y="288" width="16" height="16">
+   <properties>
+    <property name="energy" value="1"/>
+    <property name="objid" value="31"/>
+    <property name="objtype" value="enemy_squeleton"/>
+    <property name="script" value="ACTION_PATROL, FLAG_PATROL_NONE, ACTION_FIGHT, FLAG_FIGHT_NONE"/>
+    <property name="scriptid" value="3"/>
+   </properties>
+  </object>
+  <object id="33" name="F1 - door 32" gid="263" x="1008" y="256" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="32"/>
+    <property name="objtype" value="door"/>
+    <property name="script" value="ACTION_WAIT_DEAD, 31, ACTION_OPEN_DOOR, 255, ACTION_NONE"/>
+    <property name="scriptid" value="1"/>
+   </properties>
+  </object>
+  <object id="34" name="F1 - door 33" gid="263" x="752" y="96" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="33"/>
+    <property name="objtype" value="door"/>
+    <property name="script" value="ACTION_WAIT_SWITCH_ON, 35, ACTION_OPEN_DOOR, 255, ACTION_NONE"/>
+    <property name="scriptid" value="5"/>
+   </properties>
+  </object>
+  <object id="35" name="F1 - door 34" gid="263" x="896" y="96" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="34"/>
+    <property name="objtype" value="door"/>
+    <property name="script" value="ACTION_WAIT_SWITCH_ON, 36, ACTION_OPEN_DOOR, 255, ACTION_NONE"/>
+    <property name="scriptid" value="7"/>
+   </properties>
+  </object>
+  <object id="36" name="F1 - switch 35" gid="262" x="592" y="80" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="35"/>
+    <property name="objtype" value="switch"/>
+    <property name="script" value="ACTION_WAIT_SWITCH_ON, 255, ACTION_TOGGLE_SWITCH_ON, 255, ACTION_NONE"/>
+    <property name="scriptid" value="4"/>
+   </properties>
+  </object>
+  <object id="37" name="F1 - switch 36" gid="262" x="16" y="128" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="36"/>
+    <property name="objtype" value="switch"/>
+    <property name="script" value="ACTION_WAIT_SWITCH_ON, 255, ACTION_TOGGLE_SWITCH_ON, 255, ACTION_NONE"/>
+    <property name="scriptid" value="6"/>
+   </properties>
+  </object>
+  <object id="38" name="F1 - box 37" gid="264" x="544" y="128" width="16" height="16">
+   <properties>
+    <property name="energy" value="15"/>
+    <property name="objid" value="37"/>
+    <property name="objtype" value="box_right"/>
+    <property name="script" value="ACTION_WAIT_DESTROYED,255, ACTION_REMOVE_BOXES, 255, ACTION_NONE"/>
+    <property name="scriptid" value="8"/>
+   </properties>
+  </object>
+  <object id="39" name="F1 - box 38" gid="264" x="800" y="240" width="16" height="16">
+   <properties>
+    <property name="energy" value="15"/>
+    <property name="objid" value="38"/>
+    <property name="objtype" value="box_right"/>
+    <property name="script" value="ACTION_WAIT_DESTROYED,255, ACTION_REMOVE_BOXES, 255, ACTION_CHANGE_OBJECT,OBJECT_BREAD , ACTION_NONE"/>
+    <property name="scriptid" value="9"/>
+   </properties>
+  </object>
+  <object id="40" name="F1 - box 39" gid="264" x="192" y="128" width="16" height="16">
+   <properties>
+    <property name="energy" value="10"/>
+    <property name="objid" value="39"/>
+    <property name="objtype" value="box_right"/>
+    <property name="script" value="ACTION_WAIT_DESTROYED, 255, ACTION_REMOVE_BOXES, 255, ACTION_CHANGE_OBJECT,OBJECT_BREAD , ACTION_NONE"/>
+    <property name="scriptid" value="10"/>
+   </properties>
+  </object>
+  <object id="46" name="F1 - Energy 45" gid="269" x="320" y="160" width="16" height="16">
+   <properties>
+    <property name="energy" value="0"/>
+    <property name="objid" value="45"/>
+    <property name="objtype" value="box_jar"/>
+    <property name="script" value="ACTION_KILL_PLAYER, ACTION_NONE"/>
+    <property name="scriptid" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer name="Dureza" width="64" height="20" opacity="0.66">
+  <data encoding="base64" compression="zlib">
+   eJztltEOgCAIRVP5/2/upTbnwEAuWrOHs9VG5kFUcjqO/MOSAKx2WOn+pXxE+baUC+98VvmTYiwCzP9N/qT0tuQDsR5ZeK7fpRjt/+paLQLampdie+Nr/dvY8hBjyXf0WTE6rnafeJ128EdAyX9WSHB7wfN9hH8ku/t7a3hG/aMdZ/qjzzQE7d1rdfDk9u1wPXSvRnr7f7XLKBb/GevP3XvaHtHjP9qPjvhb73a0M/d/VP3cUML1MpHeUf47cQLAXQz7
+  </data>
+ </layer>
+ <layer name="Divisiones" width="64" height="20" opacity="0.49">
+  <data encoding="base64" compression="zlib">
+   eJzt1rkRACAMA0Hovy5+6AnX4ACNmQsu3EyBSk6pOmtWCe67NZxNPB6Px+PxIf2ytrPzgVf/L7VX7w+Px+PxePx7r/5fan8Br9DyLg==
+  </data>
+ </layer>
+</map>

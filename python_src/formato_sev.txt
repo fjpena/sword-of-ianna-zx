@@ -1,0 +1,21 @@
+Formato SEV:
+
+- Bytes 0-3: Cadena "Sev\0"
+- Bytes 4-5: versión. 0.8 es la más reciente
+- Bytes 6-7:   b7*256+b6 es P1, no puede ser mayor que 2  -> si P1==2, tiene máscara tras la imagen
+- Bytes 8-9:   b9*256+b8 es P2, no puede ser mayor que 31 -> número de frames
+- Bytes 10-11: b11*256+b10 es SX: tamaño en X de imagen
+- Bytes 12-13: b13*256+b12 es SY: tamaño en Y de imagen
+
+Después, frames de imagen en bitmap, cargados de la siguiente forma:
+
+for (int i=0;i<C_SX*C_SY;i++)
+{
+	for (int j=0;j<8;j++)
+        {
+        	LoadingGraph->SetByte(nonattrpointer++,*parser++);
+        };
+	LoadingGraph->SetAttr(i,*parser++);
+};
+
+Carga carácter a carácter, el 9º byte en cada caso es el atributo. No queda claro si van los bytes primero en X o en Y (apostaría en X).

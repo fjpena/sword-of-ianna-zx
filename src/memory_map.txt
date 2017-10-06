@@ -1,0 +1,84 @@
+
+Memoria principal
+-----------------
+
+	Inicio	Fin	Tamaño	Nombre				Comprimido?	Comentarios
+		24599	??	Pila
+	$6018	$77FF	6120	Código principal
+
+
+	$7800	$7BFF	1024	Strings for level				Runtime
+	$7C00	$7FFF	1024	Scripts for level				Runtime
+	$8000	$8100	257	Tabla IM2					Runtime
+
+	$8101	$AC7F	11135	Código gestión tiles y sprites, después LIBRE
+
+	$AC80   $ACFF	128  Level screen address					Runtime
+	$AD00 	$B4FF	2048 Tiles del nivel actual					Runtime
+	$B500 	$B8FF	1024 Supertiles del nivel actual			Runtime
+	$B900 	$BCFF	1024 Colores de los supertiles del nivel actual	Runtime
+	
+	$BD00	$BDFF	256  Tabla de rotación de sprites
+	$BE00	$BEBF	192	 Dirty tiles							Runtime
+	$BEC0	$BF3F	128	 Sprite data area						Runtime
+	$BF40	$BF9F	96	 Entity data (12 bytes, 8 entities)		Runtime
+	$BFA0	$BFBD	30	 Animated tiles for current screen		Runtime
+    $BFBE	        1	 LIBRE
+
+	$BFBF	$BFF5	37	Rutina básica de interrupción   		Runtime
+	$BFF6	$BFFF	10	LIBRE
+
+Additional RAM banks:
+---------------------
+
+- RAM 0: 
+	$C000	$FA7F?	14976	Sprites -> character + current screen enemy (should allow up to 2 enemies, or a double-sized enemy) -> currently 6816 bytes / barbarian, 3936 bytes / enemy
+    $FA80   $FBFF   384 Pause menu string data
+	$FC00	$FDFF	512	Enemy information table -> currently, 32 bytes per enemy, so up to 16 enemies
+	$FE00	$FEFF	256	Current screen data (160 bytes: stiles for screen, 40 bytes for hardness map, 1 for player script id, 42 for objects, 13 bytes for padding))
+	$FF00	$FFFF	256	Object table for the current level
+	
+- RAM 1: current level
+	$C000	$FFFF	16384	Map (compressed!)
+
+    -> There is potentially 2 KB here for some music, if needed.
+
+- RAM 3: music + sfx + music code
+- RAM 4: Sprites: enemies  -> 3936 bytes/enemy (uncompressed), 2208 bytes/weapon (uncompressed)
+- RAM 6: Main menu + character with different weapon + other required code
+	$C000	$C47F	1152	Score area
+- RAM 7: alternate screen, +3DOS reserved area, any available space??? -> check !!!
+	$FE00  $FEFF	512	Checkpoint space
+
+
+Enemy sprite data:
+------------------
+
+- 7 normal-sized enemies
+- 4 double-sized enemies
+
+- Total: 15 enemy sprite sheets. Right now, 5 sprite sheets ~ 9K, so we will need ~27K (32 KB for this, considering character sprites with alternate weapons). We will need to load sprites from disk :-/. This also means we should be careful with how many enemies we put in a single level, to avoid going beyond 16 KB in a level.
+
+
+Cartridge pages:
+----------------
+
+Page  1: loader (256 bytes), 8192 bytes of ianna.bin
+Page  2: 16384 bytes of ianna.bin
+Page  3: 15872 bytes of ianna.bin
+Page  4: menu
+Page  5: player + music
+Page  6: sprites
+Page  7: level 1 + level 0
+Page  8: level 2
+Page  9: level 3
+Page 10: level 4
+Page 11: level 5
+Page 12: level 6
+Page 13: level 7
+Page 14: level 8
+Page 15: sprites (part 2)
+Page 16: level 9
+Page 17: intro/ending screens
+Page 18: loaging screen
+Page 19: Code to save preferences

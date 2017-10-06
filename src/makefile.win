@@ -1,0 +1,99 @@
+all: ianna-3dos.dsk ianna-sect.dsk
+
+clean: 
+	del  *.tzx
+	del *.bin
+	del *.sym
+	del *.o
+	del *~
+
+ianna.tzx: ianna.bin map.bin
+	buildtzx -l 1 -i template.txt -o ianna.tzx -n "SwordOfIanna"
+
+ianna-3dos.dsk: ianna-3dos.bin level1.map level2.map cedmus.bin diskload.bin.zxb disk menu.bin ianna.spr
+	copy /b /y ianna-3dos.bin ianna.bin
+	copy /b /y level1.map + level2.map + level3.map + level0.map ianna.dat
+	copy /b cedmus.bin + menu.bin + ianna.bin  ianna.gam
+	mkp3fs -cpmonly ianna-3dos.dsk disk ianna.gam ianna.dat ianna.spr diskload.bin.zxb 
+
+ianna-sect.dsk: ianna-sect.bin level1.map level2.map cedmus.bin stage2.bin bootsector.bin menu.bin sprite_data.bin
+	copy /b /y ianna-sect.bin ianna.bin
+	copy /b /y cedmus.bin ianna.bin ianna.gam
+	DSKGen.exe ianna_sect.xml
+
+menu.bin: menu.asm marcador.scr menu_screen.cmp ianna.sym barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp
+	pasmo menu.asm menu.bin menu.sym
+
+stage2.bin: diskload-sect.asm
+	pasmo diskload-sect.asm stage2.bin
+
+disk: loader.bas
+	zmakebas -a 10 -n disk -o disk.tap loader.bas
+	tapget disk.tap disk
+
+diskload.bin.zxb: diskload.bin
+	specform diskload.bin
+
+diskload.bin: diskload.asm
+	pasmo diskload.asm diskload.bin	
+
+bootsector.bin: bootsector.asm
+	pasmo bootsector.asm bootsector.bin
+
+ianna-3dos.bin: ianna.asm tiles.asm drawsprite.asm input.asm im2.asm rambank.asm entities.asm scripts.asm sprite.asm sprite_barbaro.asm sprite_esqueleto.asm objects.asm depack.asm io-3dos.asm cedmus.equ.asm music.asm score.asm sprite_data.sym iannafx.asm
+	copy /b /y io-3dos.asm io.asm
+	pasmo ianna.asm ianna-3dos.bin ianna.sym
+
+ianna-sect.bin: ianna.asm tiles.asm drawsprite.asm input.asm im2.asm rambank.asm entities.asm scripts.asm sprite.asm sprite_barbaro.asm sprite_esqueleto.asm objects.asm depack.asm io-sect.asm cedmus.equ.asm music.asm score.asm sprite_data.sym iannafx.asm
+	copy /b /y io-sect.asm > io.asm
+	pasmo ianna.asm ianna-sect.bin ianna.sym
+
+ianna.spr: sprite_esqueleto.cmp sprite_orc.cmp sprite_mummy.cmp sprite_troll.cmp sprite_rollingstone.cmp sprite_golem_inf.cmp sprite_golem_sup.cmp
+	copy /b /y sprite_esqueleto.cmp sprite_orc.cmp sprite_mummy.cmp sprite_troll.cmp sprite_rollingstone.cmp sprite_golem_inf.cmp sprite_golem_sup.cmp ianna.spr
+
+sprite_esqueleto.cmp: sprite_esqueleto.asm
+	pasmo sprite_esqueleto.asm sprite_esqueleto.bin
+	apack sprite_esqueleto.bin sprite_esqueleto.cmp
+
+sprite_troll.cmp: sprite_troll.asm
+	pasmo sprite_troll.asm sprite_troll.bin
+	apack sprite_troll.bin sprite_troll.cmp
+
+sprite_orc.cmp: sprite_orc.asm
+	pasmo sprite_orc.asm sprite_orc.bin
+	apack sprite_orc.bin sprite_orc.cmp
+
+sprite_mummy.cmp: sprite_mummy.asm
+	pasmo sprite_mummy.asm sprite_mummy.bin
+	apack sprite_mummy.bin sprite_mummy.cmp
+
+sprite_rollingstone.cmp: sprite_rollingstone.asm
+	pasmo sprite_rollingstone.asm sprite_rollingstone.bin
+	apack sprite_rollingstone.bin sprite_rollingstone.cmp
+
+sprite_golem_inf.cmp: sprite_golem_inf.asm
+	pasmo sprite_golem_inf.asm sprite_golem_inf.bin
+	apack sprite_golem_inf.bin sprite_golem_inf.cmp 
+
+sprite_golem_sup.cmp: sprite_golem_sup.asm
+	pasmo sprite_golem_sup.asm sprite_golem_sup.bin
+	apack sprite_golem_sup.bin sprite_golem_sup.cmp
+
+barbaro_sword.cmp: barbaro_sword.asm
+	pasmo barbaro_sword.asm barbaro_sword.bin
+	apack barbaro_sword.bin barbaro_sword.cmp
+
+barbaro_eclipse.cmp: barbaro_eclipse.asm
+	pasmo barbaro_eclipse.asm barbaro_eclipse.bin
+	apack barbaro_eclipse.bin barbaro_eclipse.cmp
+
+barbaro_axe.cmp: barbaro_axe.asm
+	pasmo barbaro_axe.asm barbaro_axe.bin
+	apack barbaro_axe.bin barbaro_axe.cmp
+
+barbaro_blade.cmp: barbaro_blade.asm
+	pasmo barbaro_blade.asm barbaro_blade.bin
+	apack barbaro_blade.bin barbaro_blade.cmp
+
+menu_screen.cmp: menu_screen.scr
+	apack menu_screen.scr menu_screen.cmp

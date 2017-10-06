@@ -1,0 +1,3 @@
+1- En tiled_map.py, añadir la relación entre la etiqueta (enemy_pepito) y el nombre del enemigo (ENEMY_PEPITO) en objmatch
+2- En mapa.py, añadir la relación entre el nombre (ENEMY_PEPITO) y el directorio en el que estarán los sprites (pepito) en enemy_spritedir
+3- En ianna_entity.py, añadir los valores de energía por nivel, probabilidades de golpe y bloqueo y patrones de ataque (variables 	enemy_energy , enemy_prob_longrange , enemy_prob_shortrange , enemy_prob_block,	enemy_attack_patterns)
