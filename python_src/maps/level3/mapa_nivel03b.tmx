@@ -357,7 +357,7 @@
     <property name="scriptid" value=""/>
    </properties>
   </object>
-  <object id="41" name="034 - Teleport" gid="295" x="1264" y="944" width="16" height="16">
+  <object id="41" name="034 - Teleport" gid="295" x="1264" y="928" width="16" height="16">
    <properties>
     <property name="energy" value="5"/>
     <property name="objid" value="34"/>
