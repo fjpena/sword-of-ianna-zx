@@ -118,7 +118,7 @@ loader_table_ianna:
 	db $06		; RAM Bank 6, not compressed
 
 	; We have to do something special in this case. Due to the way the
-	; Kartusho v4 cart paging works, we cannot read anything in the last
+	; Kartusho v4 cart paging works, we cannot read anything in the lastm
 	; 4 bytes of the lower page ($3ffc-$3fff). So we need to adapt the
 	; files to skip the last 4 bytes, and load them in the next page.
 
@@ -136,7 +136,7 @@ loader_table_ianna:
 
 	db 2		; load from ROM page 2
 	dw 0 		; load offset is 0
-	dw 15878  	; load 15872 bytes (ianna-2.rom)
+	dw 15880  	; load 15880 bytes (ianna-2.rom)
 	dw 49144	; load to 49144
 	db $00		; RAM Bank 0, not compressed
 

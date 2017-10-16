@@ -1,5 +1,7 @@
 all: ianna-3dos.dsk sword.hdf ianna-cart.rom ianna-dan.rom ianna-if2.rom
 
+# ianna-sect.dsk vendrá cuando todo esté listo :)
+
 clean: 
 	rm *.tzx
 	rm *.bin
@@ -9,6 +11,8 @@ clean:
 	rm -f *.pck
 	rm -f *.rom
 
+#ianna.tzx: ianna.bin map.bin
+#	export PACKER=/usr/local/bin/apack; buildtzx -l 1 -i template.txt -o ianna.tzx -n "SwordOfIanna"
 
 ianna-3dos.dsk: ianna-3dos.bin level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ram3.bin diskload.bin.zxb disk  ianna.spr menu.asm marcador.scr menu_screen.cmp barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp intro.asm intro.bin loading.scr
 	cat ianna-3dos.sym > ianna.sym
@@ -21,12 +25,12 @@ ianna-3dos.dsk: ianna-3dos.bin level1.map level2.map level3.map level4.map level
 	mkp3fs -180 -cpmonly ianna-sidea.dsk disk ianna.gam diskload.bin.zxb
 	mkp3fs -180 -cpmonly ianna-sideb.dsk ianna.dat ianna2.dat ianna.spr intro.bin
 
-# This is a sector-based version, which was not finished
 ianna-sect.dsk: ianna-sect.bin level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ram3.bin stage2.bin bootsector.bin ianna.spr menu.asm marcador.scr menu_screen.cmp barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp intro.asm intro.bin
 	cat ianna-sect.sym > ianna.sym
 	pasmo menu.asm menu.bin menu-sect.sym
 	cat ianna-sect.bin > ianna.bin
 	cat ram3.bin ianna.bin > ianna.gam
+#	mono DSKGen.exe ianna_sect.xml
 	dskgen -o ianna-sect.dsk --config ianna_sect.json
 
 sword.hdf: ianna-esxdos.bin level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ram3.bin esxload.bin loader ianna.spr menu.asm marcador.scr menu_screen.cmp barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp intro.asm intro.bin loading.scr
@@ -319,7 +323,7 @@ ianna-if2.rom: if2boot.bin ianna-if2.bin level1.map level2.map level3.map level4
 	cat if2boot.bin tmpfile.bin > tmpfile2.bin
 	fill16k tmpfile2.bin ianna-0.rom
 	rm -f tmpfile.bin tmpfile2.bin
-	dd if=ianna-if2.bin of=tmpfile.bin bs=1 count=16380 skip=8198
+	dd if=ianna-if2.bin of=tmpfile.bin bs=1 count=16380 skip=8188
 	fill16k tmpfile.bin ianna-1.rom
 	rm -f tmpfile.bin
 	dd if=ianna-if2.bin of=tmpfile.bin bs=1 count=15880 skip=24568
