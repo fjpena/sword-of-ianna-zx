@@ -31,7 +31,7 @@ some tools to build:
 - zmakebas (http://rus.members.beeb.net/zmakebas.html)
 - The apack compressor. I use the version from http://www.smspower.org/maxim/uploads/SMSSoftware/aplib12.zip?sid=23bcb2a72f8a461be5cad0f46f7c3681,
   renamed to "apack" and run via Wine.
-- The fill16k utility, from the utils/ directory.
+- The fill16k utility, from the tools/ directory.
 - hdfmonkey for the ESXDOS virtual disk file (https://github.com/gasman/hdfmonkey)
 - dskgen for an unfinished +3 sector-based loader (https://github.com/AugustoRuiz/dskgen)
 
