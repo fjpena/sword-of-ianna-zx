@@ -27,7 +27,9 @@ some tools to build:
 
 - The pasmo assembler (http://pasmo.speccy.org/)
 - The mkp3fs, specform and tapget utilities
-  (http://www.seasip.info/ZX/taptools-1.0.8.tar.gz)
+  (http://www.seasip.info/ZX/taptools-1.0.8.tar.gz). Make sure libdsk
+  (http://www.seasip.info/Unix/LibDsk/) is installed before you try compiling
+  the utilities.
 - zmakebas (http://rus.members.beeb.net/zmakebas.html)
 - The apack compressor. I use the version from http://www.smspower.org/maxim/uploads/SMSSoftware/aplib12.zip?sid=23bcb2a72f8a461be5cad0f46f7c3681,
   renamed to "apack" and run via Wine.
