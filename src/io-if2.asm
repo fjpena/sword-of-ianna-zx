@@ -3,9 +3,9 @@
 ; Per-level data:  ROM page (db), offset (dw), size (dw)
 level_page: db 6, 7, 8, 9, 10, 11, 12, 13, 6, 15
 
-level_data: dw     0, 10848		; level 1
+level_data: dw     0, 10853		; level 1
 			dw     0, 12123		; level 2
-			dw     0, 12159		; level 3
+			dw     0, 12164		; level 3
 			dw     0, 12685		; level 4
 			dw     0, 14356		; level 5
 			dw     0, 13925		; level 6
@@ -72,7 +72,7 @@ IO_LoadLevel:
 	add hl, de      
     pop de          ; restore size
 	ld a, (hl)
-	ld ixl, a		; IXl holds the ROM page +1
+	ld ixl, a		; IXl holds the ROM page
 	ld hl, $C000		; load at $C000
 	ld a, 1			; and store in RAMBank1
 	jp IO_Load
@@ -163,7 +163,7 @@ IO_LoadSprite:
 	add hl, de
     pop de
 	ld a, (hl)
-	ld ixl, a		; IXl holds the ROM page +1
+	ld ixl, a		; IXl holds the ROM page
 	ld hl, (current_spraddr)		; load address
 	ld a, 4			; and store in RAMBank4
 	push de
@@ -178,7 +178,7 @@ IO_LoadSprite:
 ;	- A:  page for destination
 ;	- DE: number of bytes to load
 ;	- BC: offset in file
-;	- IXl: ROM page (+1)
+;	- IXl: ROM page
 
 IO_Load:
 	push hl

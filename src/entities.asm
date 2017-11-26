@@ -2947,15 +2947,17 @@ entity_move_y_3:
     jr nz, entity_move_y_3_barbarian ; if not, just do whatever
     ; now, make the entity dissapear immediately
     pop af
-    ld h, (ix+1)
-    ld l, (ix+0)        ; enemy sprite in HL
-	push ix
-	call CleanSprite	; clean sprite
-	pop ix
-    ld (ix+0), 0
-    ld (ix+1), 0
-    ld (ix+4), 0        ; reset entity (dead, sprite is NULL)
+	call entity_remove
     call set_entity_dead
+	; if the enemy has a secondary entity, we need to remove it as well
+	ld a, (ix+10)
+	and $f0
+	cp OBJECT_ENEMY_DEMON*16-OBJECT_ENEMY_SKELETON*16
+	jr c, entity_move_done
+	push ix
+	ld ix, ENTITY_ENEMY2_POINTER
+	call entity_remove	
+	pop ix
 entity_move_done:
 	scf		; Carry flag set, we were able to "move"
     ret
@@ -2976,6 +2978,18 @@ entity_move_failed:
 	ld a, (iy+4)
 	ld (newy), a
 	xor a		; reset carry flag
+	ret
+
+
+entity_remove:
+    ld h, (ix+1)
+    ld l, (ix+0)        ; enemy sprite in HL
+	push ix
+	call CleanSprite	; clean sprite
+	pop ix
+    ld (ix+0), 0
+    ld (ix+1), 0
+    ld (ix+4), 0        ; reset entity (dead, sprite is NULL)
 	ret
 
 ; Get highest possible Y with something not vacuum below or ar the specified position
@@ -3753,7 +3767,8 @@ entity_slashleft_hits_bkg:
     ld (slash_deltax_1), a
     ld a, -24
     ld (slash_deltax_2), a
-    ld a, 0
+;    ld a, 0
+	xor a
     ld (slash_hits_x), a
     ld a, (iy+3)		; get X position
 	cp 24

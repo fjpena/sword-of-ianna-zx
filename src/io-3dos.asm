@@ -1,11 +1,11 @@
 ; Generic I/O
 
-level_data:     dw     0, 10848		; level 1
-	        	dw 10848, 12123	; level 2
-            	dw 22971, 12159	; level 3
-            	dw 35130, 12685	; level 4
-		        dw 47815, 14356	; level 5
-		        dw 62171, 13925	; level 6
+level_data:     dw     0, 10853		; level 1
+	        	dw 10853, 12123	; level 2
+            	dw 22976, 12164	; level 3
+            	dw 35140, 12685	; level 4
+		        dw 47825, 14356	; level 5
+		        dw 62181, 13925	; level 6
 		        dw     0, 11783	; level 7  (file 2)
 		        dw 11783, 12116	; level 8  (file 2)
 		        dw 23899,  3926	; level 0 (attract mode, file 2)	

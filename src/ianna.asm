@@ -802,10 +802,10 @@ load_strings_common:
 ;	ei
     call setrambank0_with_di
 	; FIXME: this is just meant to be running quick tests without changing the map
-	;ld a, 6
-	;ld (current_levelx), a
-	;ld a, 0
-	;ld (current_levely), a
+;	ld a, 4
+;	ld (current_levelx), a
+;	ld a, 4
+;	ld (current_levely), a
 	;ld a, OBJECT_KEY_RED
 	;ld (inventory), a
 	ret
@@ -1184,7 +1184,41 @@ InitVariables:
 ;	ld (player_experience), a ; FIXME this is a cheat
 	ret
 
+; Multiply two 8-bit values into a 16-bit value
+; INPUT: H - value 1
+;		 E - value 2
+; OUTPUT: HL: result
+Mul8x8:                           ; this routine performs the operation HL=H*E
+  ld d,0                         ; clearing D and L
+  ld l,d
+  ld b,8                         ; we have 8 bits
+Mul8bLoop:
+  add hl,hl                      ; advancing a bit
+  jp nc,Mul8bSkip                ; if zero, we skip the addition (jp is used for speed)
+  add hl,de                      ; adding to the product if necessary
+Mul8bSkip:
+  djnz Mul8bLoop
+  ret
 
+
+; Divide a 16-bit value by an 8-bit one
+; INPUT: HL / C
+; OUTPUT: HL: result
+
+Div16_8:
+  push de
+  ld a,c                         ; checking the divisor; returning if it is zero
+  or a                           ; from this time on the carry is cleared
+  ret z
+  ld de,-1                       ; DE is used to accumulate the result
+  ld b,0                         ; clearing B, so BC holds the divisor
+Div16_8_Loop:                    ; subtracting BC from HL until the first overflow
+  sbc hl,bc                      ; since the carry is zero, SBC works as if it was a SUB
+  inc de                         ; note that this instruction does not alter the flags
+  jr nc,Div16_8_Loop             ; no carry means that there was no overflow
+  ex de, hl                      ; HL gets the result
+  pop de
+  ret
 
 END_PAGE2:
 
@@ -1264,42 +1298,7 @@ Div8_NoAdd:
     cpl
     ret
 
-; Divide a 16-bit value by an 8-bit one
-; INPUT: HL / C
-; OUTPUT: HL: result
 
-Div16_8:
-  push de
-  ld a,c                         ; checking the divisor; returning if it is zero
-  or a                           ; from this time on the carry is cleared
-  ret z
-  ld de,-1                       ; DE is used to accumulate the result
-  ld b,0                         ; clearing B, so BC holds the divisor
-Div16_8_Loop:                    ; subtracting BC from HL until the first overflow
-  sbc hl,bc                      ; since the carry is zero, SBC works as if it was a SUB
-  inc de                         ; note that this instruction does not alter the flags
-  jr nc,Div16_8_Loop             ; no carry means that there was no overflow
-  ex de, hl                      ; HL gets the result
-  pop de
-  ret
-
-
-
-; Multiply two 8-bit values into a 16-bit value
-; INPUT: H - value 1
-;		 E - value 2
-; OUTPUT: HL: result
-Mul8x8:                           ; this routine performs the operation HL=H*E
-  ld d,0                         ; clearing D and L
-  ld l,d
-  ld b,8                         ; we have 8 bits
-Mul8bLoop:
-  add hl,hl                      ; advancing a bit
-  jp nc,Mul8bSkip                ; if zero, we skip the addition (jp is used for speed)
-  add hl,de                      ; adding to the product if necessary
-Mul8bSkip:
-  djnz Mul8bLoop
-  ret
 
 
 END_CODE_PAGE3:

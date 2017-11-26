@@ -3,9 +3,9 @@
 ; Per-level data:  ROM page + 1(db), offset (dw), size (dw)
 level_page: db 7, 8, 9, 10, 11, 12, 13, 14, 7, 16
 
-level_data: dw     0, 10848		; level 1
+level_data: dw     0, 10853		; level 1
 			dw     0, 12123		; level 2
-			dw     0, 12159		; level 3
+			dw     0, 12164		; level 3
 			dw     0, 12685		; level 4
 			dw     0, 14356		; level 5
 			dw     0, 13925		; level 6

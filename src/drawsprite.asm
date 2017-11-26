@@ -82,10 +82,11 @@ nonewsprite:
 ;	- HL: pointer to sprite in sprite list
 
 CleanSprite:
+	xor a
 	push hl
-	ld (hl), 0
+	ld (hl), a
 	inc hl
-	ld (hl), 0	; spradress=0
+	ld (hl), a	; spradress=0
 	inc hl
 	inc hl		; Now pointing at the X position
 	ld a, (hl)

@@ -3,19 +3,19 @@
 INCLUDE "unodos.api"
 
 level_offset:   dw 0		; level 1
-	        	dw 10848	; level 2
-            	dw 22971	; level 3
-            	dw 35130	; level 4
-		        dw 47815	; level 5
-		        dw 62171	; level 6
+	        	dw 10853	; level 2
+            	dw 22976	; level 3
+            	dw 35140	; level 4
+		        dw 47825	; level 5
+		        dw 62181	; level 6
 		        dw 0		; level 7  (file 2)
 		        dw 11783	; level 8  (file 2)
 		        dw 23899	; level 0 (attract mode, file 2)	
 				dw 27825	; level 9 (easter egg)
 
-level_size: dw 10848	; level 1
+level_size: dw 10853	; level 1
             dw 12123	; level 2
-        	dw 12159	; level 3
+        	dw 12164	; level 3
             dw 12685	; level 4
         	dw 14356    ; level 5
         	dw 13925	; level 6
