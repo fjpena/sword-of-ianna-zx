@@ -11,7 +11,7 @@ level_data: dw     0, 10853		; level 1
 			dw     0, 13925		; level 6
 			dw     0, 11783		; level 7
 			dw     0, 12116		; level 8
-			dw 10848,  3926		; level 0 (attract mode)
+			dw 10853,  3926		; level 0 (attract mode)
 			dw	   0,  8662		; level 9 (easter egg)
 
 ; Per-sprite data: ROM page + 1(db), offset (dw), size (dw)
