@@ -1,4 +1,4 @@
-org 0000
+	org 0000
 
 
 start:
@@ -29,13 +29,13 @@ L0004:
 	ldir
 	jp 24000
 
-org 0x0038 ; Just 1 byte remaining. Dont add anything above this
+	org 0x0038 ; Just 1 byte remaining. Dont add anything above this
 int_isr:				; INT Address
 	ei
 	reti
 
 	
-org 0x0066				; NMI Address
+	org 0x0066				; NMI Address
 nmi_isr: 
 	incbin "dandanator/nmiroutine.bin"
 	

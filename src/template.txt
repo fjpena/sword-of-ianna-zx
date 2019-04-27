@@ -1,6 +1,0 @@
-# two simple blocks...
-# name load_addr  copy_addr  ram_bank  compressed?
-2
-map.bin		32768 49152 1 0
-ianna.bin	24600 24600 0 0
-24600

@@ -1,4 +1,4 @@
-org 24000
+	org 24000
 
 
 set_cart_boot:

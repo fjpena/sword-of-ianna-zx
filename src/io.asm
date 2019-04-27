@@ -1,21 +1,5 @@
 ; I/O drivers
 
-IF IO_DRIVER=1
-INCLUDE "io-3dos.asm"
-ENDIF
-
-IF IO_DRIVER=2
-INCLUDE "io-sect.asm"
-ENDIF
-
-IF IO_DRIVER=3
-INCLUDE "io-esxdos.asm"
-ENDIF
-
 IF IO_DRIVER=4
 INCLUDE "io-cart.asm"
-ENDIF
-
-IF IO_DRIVER=5
-INCLUDE "io-if2.asm"
 ENDIF

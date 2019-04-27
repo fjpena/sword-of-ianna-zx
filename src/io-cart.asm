@@ -1,7 +1,13 @@
 ; I/O for dandare's cartridge
+MLDoffset2:		EQU 23808
+sectorgrabar	EQU	23809
+romsectorgrabar	EQU	23810
+hlsectorgrabar	EQU	23811
+SAVEPREFS 		EQU 23813
+enviacomandosimple:	equ 23873
 
 ; Per-level data:  ROM page + 1(db), offset (dw), size (dw)
-level_page: db 7, 8, 9, 10, 11, 12, 13, 14, 7, 16
+level_page: db 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 
 level_data: dw     0, 10853		; level 1
 			dw     0, 12123		; level 2
@@ -11,30 +17,29 @@ level_data: dw     0, 10853		; level 1
 			dw     0, 13925		; level 6
 			dw     0, 11783		; level 7
 			dw     0, 12116		; level 8
-			dw 10853,  3926		; level 0 (attract mode)
+			dw 	   0,  3926		; level 0 (attract mode)
 			dw	   0,  8662		; level 9 (easter egg)
 
 ; Per-sprite data: ROM page + 1(db), offset (dw), size (dw)
-sprite_page: db 6, 6, 6, 6, 6, 6, 6, 15, 15, 15, 15, 15, 15, 15, 15
+sprite_page: db 7, 9, 12, 14, 5, 14, 14, 6, 8, 11, 11, 8, 10, 6, 10
 
-sprite_data:	dw     0, 2193	; skeleton
-				dw  2193, 2023	; orc
-				dw  4216, 2225	; mummy
-				dw  6441, 2312	; troll
-				dw  8753,  499	; rock
-				dw  9252, 2455	; knight
-				dw 11707, 2620	; dal gurak
-    			dw     0, 2486		; golem
-    			dw  2486, 2186		; ogre
-	    		dw  4672, 2186		; minotaur
-	    		dw  6858, 2124		; demon
-	    		dw  8982, 1281	    ; golem - sup
-	    		dw 10263, 1315		; ogre - sup
-	        	dw 11578, 1766		; minotaur - sup
-			    dw 13344, 1091		; demon - sup
+sprite_data:	dw 12164, 2193	;0  skeleton
+				dw 14356, 2023	;1 orc				
+				dw 12116, 2225	;2 mummy
+				dw 13737, 2312	;3 troll
+				dw 10853,  499	;4 rock
+				dw  8662, 2455	;5 knight
+				dw 11117, 2620	;6 dal gurak
+    			dw 12123, 2486		;7 golem			
+    			dw 12685, 2186		;8 ogre				
+	    		dw 11783, 2186		;9 minotaur			
+	    		dw 13969, 2124		;A demon			
+	    		dw 14871, 1281	    ;B golem - sup		
+	    		dw 13925, 1315		;C ogre - sup		
+	        	dw 14609, 1766		;D minotaur - sup	
+			    dw 15240, 1091		;E demon - sup		
 
-INTRO_ROM_PAGE: EQU 17
-
+INTRO_ROM_PAGE: EQU 3
 intro_data: dw    0, 1498	; intro - frame
 			dw 1498, 4131	; intro - screens
 			dw 5629, 3082	; end - screens
@@ -42,8 +47,6 @@ intro_data: dw    0, 1498	; intro - frame
 			dw 10525, 2630  ; music - intro
 			dw 13155, 2052	; music - end
 			dw 15207, 462	; music - credits
-
-
 
 ; Load level from disk
 ; Will *always* place stuff in RAM Page 1, at $c000
@@ -71,9 +74,8 @@ IO_LoadLevel:
 	ld e, a
 	ld d, 0
 	add hl, de      
+	call ixlconde												;<<<<<<<<<<<<<<<<<<<<<
     pop de          ; restore size
-	ld a, (hl)
-	ld ixl, a		; IXl holds the ROM page +1
 	ld hl, $C000		; load at $C000
 	ld a, 1			; and store in RAMBank1
 	jp IO_Load
@@ -100,9 +102,9 @@ IO_LoadIntro:
 	ld e, (hl)
 	inc hl
 	ld d, (hl)		; DE: number of bytes to load
-	xor a			; Page 0
+	call ixlintro				;<<<<<<<<<<<<<<<
 	ld hl, $AC80	; buffer
-	ld ixl, INTRO_ROM_PAGE
+	xor a			; Page 0
 	jp IO_Load
 ;	call IO_Load
 ;	ret
@@ -125,9 +127,9 @@ IO_LoadIntroMusic:
 	ld e, (hl)
 	inc hl
 	ld d, (hl)		; DE: number of bytes to load
-	ld a, 3			; Page 3
+	call ixlintro				;<<<<<<<<<<<<<<<
 	ld hl, $CB72	; buffer
-	ld ixl, INTRO_ROM_PAGE
+	ld a, 3			; Page 3
 	jp IO_Load
 
 
@@ -162,9 +164,8 @@ IO_LoadSprite:
 	ld e, a
 	ld d, 0
 	add hl, de
+	call ixlconde										;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     pop de
-	ld a, (hl)
-	ld ixl, a		; IXl holds the ROM page +1
 	ld hl, (current_spraddr)		; load address
 	ld a, 4			; and store in RAMBank4
 	push de
@@ -252,9 +253,8 @@ PAUSELOOPSN EQU 40						; 40 is recognized by all firmwares. 10 is faster but on
 
 IO_LoadPrefs:
 	    call CART_Setenv
-		ld a, 31			; slot where the prefs are saved
-		call SENDNRCMD
-		ld hl, 0
+		call selectromsector
+		ld hl, (hlsectorgrabar)
 		ld de, 16384
 		ld bc, 14
 		ldir				; load prefs
@@ -271,6 +271,8 @@ IO_LoadPrefs:
 		ldir
 LoadPrefs_exit:
 		jp CART_RestoreEnv
+		nop
+		nop
 ;	    call CART_RestoreEnv
 ;		ret
 	
@@ -291,15 +293,21 @@ IO_SavePrefs:
 		call prefs_cksum
 		ld (de), a
 	    call CART_Setenv
-		ld a, 19			; slot where the code is located
-		call SENDNRCMD
+;		ld a, 19			; slot where the code is located
+;		call SENDNRCMD
 		ld hl, 16384
 		call SAVEPREFS
 	    jp CART_RestoreEnv
 ;	    call CART_RestoreEnv
 ;		ret
 
+selectromsector
+	ld a, (romsectorgrabar)
+	jr SENDNRCMD
+
+
 ; Calculate checksum of the preferences, return in A
+
 prefs_cksum:
 		ld hl, 16384
 		ld b, 12
@@ -310,35 +318,23 @@ cksum_loop:
 		djnz cksum_loop
 		inc a				; We add all values and then add 1, to avoid a list of zeros being a valid checksum
 		ret
+;		nop
+;	display "total bytes ",/d, $-level_page
 
-		
-; ----------------------------------------------------------------------------------------  
-; ZX Dandanator! Mini - Eeprom Write SST39SF040 Unit to be included in In Sword of Ianna
-;
-;
-; Dandare - Aug 2017
-; ----------------------------------------------------------------------------------------  	
+ixlconde
+	ld a, (MLDoffset2)
+	ld d, a
+	ld a, (hl)
+	add a, d
+ixlend
+	ld ixl, a		; IXl holds the ROM page +1
+	ret
 
-RAMADDREXEC	EQU 16384+4096					; <---- ALL THIS MUST BE RUN FROM RAM, SELECT RAM ADDRESS TO COPY ALL THIS CODE										
-
-; ----------------------------------------------------------------------------------------
-; ERASE AND PROGRAM FIXED SECTOR 120, first 4KB of slot 30 (0-31)
-;
-; 	HL= Pointer to source 4KB to be saved
-;
-; ************  MUST BE RUN FROM RAM, DI, AND WITH EXTERNAL EEPROM PAGED IN  *************
-; **** MAY BE CALLED FROM ROM
-; ----------------------------------------------------------------------------------------
-SAVEPREFS: 	DI							; Ensure this is run with no INTS. Caller must be set INT status afterwards
-			PUSH AF						; Save used registers
-			PUSH BC
-			PUSH DE
-			
-			PUSH HL						; Save pointer of data to be saved
-
-			LD HL, 0			; Copy all this code to ram
-			LD DE, RAMADDREXEC
-			LD BC, 194			; 194 bytes of code
-			LDIR
-			
-			JP RAMADDREXEC					; Jump to RAM ADDRESS
+ixlintro
+	ld a, (MLDoffset2)
+	ld l, a
+	ld a, INTRO_ROM_PAGE
+	add a, l
+	jr ixlend
+	nop
+	
