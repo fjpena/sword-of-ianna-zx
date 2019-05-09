@@ -62,30 +62,41 @@ CopyTile_score:
 	push af
 	push bc
 			
-	ld hl, SCOREAREA	
-	ld e, a				; A*8 is the beginning of the tile
-	ld d, 0
-	xor a
-	rl e
-	rl d	
-	rl e
-	rl d
-	rl e
-	rl d			
+;	ld hl, SCOREAREA	
+;	ld e, a				; A*8 is the beginning of the tile
+;	ld d, 0
+;	xor a				;4
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8
+;	add hl, de		;
+;	ex de, hl		; DE points to the tile
+
+	ld de, SCOREAREA	
+	ld l, a 					;4
+	ld h, 0						;7
+	add hl,hl					;11 duplicamos HL (x2)
+	add hl,hl					;11 duplicamos HL (x4 en total)
+	add hl,hl					;11 duplicamos HL (x8 en total)
 	add hl, de		;
 	ex de, hl		; DE points to the tile
+
 	
 	ld hl, TileScAddress	; address table
-	ld a, c
-	add a,c			; C = 2*Y, to address the table
-	ld c,a
+;	ld a, c
+;	add a,c			; C = 2*Y, to address the table
+;	ld c, a
 	ld a, b			; A = X
-	ld b,0			; Clear B for the addition
+	ld b, 0			; Clear B for the addition
+	add hl, bc		;ahorramos 1 t-state y 2 bytes :)
 	add hl, bc		; hl = address of the first tile
 	ld c, (hl)
-	inc hl
+	inc l
 	ld b, (hl)		; BC = Address
-	ld l,a			; hl = X
+	ld l, a			; hl = X
 	ld h, 0
 	add hl, bc		; hl = tile address in video memory
 
@@ -656,10 +667,10 @@ draw_weapon_attributes:
 draw_weapon_loop_attr:
 	ld a, (hl)
 	push hl
-	push bc
+;	push bc
 	ld e, a
 	call SetAttribute
-	pop bc
+;	pop bc
 	pop hl
 	inc hl
 	inc b

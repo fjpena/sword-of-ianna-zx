@@ -230,12 +230,13 @@ draw_screen_attributes:
 	ld bc, $0800
 ;	halt
 draw_screen_loop_attr:
-	ld a, (hl)
+;	ld a, (hl)
+	ld e, (hl)
 	push hl
-	push bc
-	ld e, a
+;	push bc
+;	ld e, a
 	call SetAttribute
-	pop bc
+;	pop bc
 	pop hl
 	inc hl
 	inc b
@@ -310,11 +311,11 @@ print_word_menu:
 ;    halt				<<<<<<<<<<<<<le quito la pausa de impresion para escuchar la musica
 	ld a, (iy+0)
 	push de
-	push iy
+;	push iy				;no tocamos IY en print_char_menu no hace falta guardarlo
 	push bc
 	call print_char_menu
 	pop bc
-	pop iy
+;	pop iy
 	pop de
 	inc iy
 	inc b
@@ -410,30 +411,46 @@ menu_cls_textarea_xloop:
 ;    ret
 
 print_char_menu:
-	sub 32		; first char is number 32	
-	ld e, a
-	ld d, 0
-	rl e
-	rl d
-	rl e
-	rl d
-	rl e
-	rl d		; Char*8, to get to the first byte
-	ld hl, FONT
-	add hl, de	; HL points to the first byte
-	ex de, hl	; DE points to the first byte
+;	sub 32				;7 first char is number 32
+;	ld e, a				;4
+;	ld d, 0				;7
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8 Char*8, to get to the first byte
+;	ld hl, FONT			;10
+;	add hl, de			;11 HL points to the first byte
+;	ex de, hl			;4 DE points to the first byte
+	;					91 total 
+
+	ld l, a 					;4
+	ld h, 0						;7
+	add hl,hl					;11 duplicamos HL (x2)
+	add hl,hl					;11 duplicamos HL (x4 en total)
+	add hl,hl					;11 duplicamos HL (x8 en total)
+	ld a, high FONT - 1			;7
+	add a, h					;4
+	ld d, a 					;4
+	ld e, l						;4
+	;							63 total
+
+
+	
 print_char_menu_go:
 	ld hl, TileScAddress	; address table
-	ld a, c
-	add a,c			; C = 2*Y, to address the table
-	ld c,a
+;	ld a, c
+;	add a,c			; C = 2*Y, to address the table
+;	ld c,a
 	ld a, b			; A = X
 	ld b, 0			; Clear B for the addition
+	add hl, bc		;ahorramos 1 t-state y 2 bytes
 	add hl, bc		; hl = address of the first tile
 	ld c, (hl)
-	inc hl
+	inc l
 	ld b, (hl)		; BC = Address
-	ld l,a			; hl = X
+	ld l, a			; hl = X
 	ld h, 0
 	add hl, bc		; hl = tile address in video memory
 	ld b, 8
@@ -512,11 +529,11 @@ credits_string_loop
 	ld a, (iy+0)
 	and a
 	ret z
-	push iy
+;	push iy				;no tocamos IY en print_char_menu no hace falta guardarlo
 	push bc
 	call print_char_menu
 	pop bc
-	pop iy
+;	pop iy
 	inc iy
 	inc b
 	jr credits_string_loop

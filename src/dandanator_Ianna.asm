@@ -11,13 +11,27 @@
 	define MLD2A  $C8	
 	define LenFiladatos 8
 	define romgrabado	1
-	define esun128k 24575
-	define traineractivado  24574
+	define esun128k    24575
+	define tienebus    24574
+	define esuninves   24573
 
 rom1	
 	org 0
 	include "inicio_rom.asm"					;incluye definidos los RST
-	ld sp, 24573
+	ld sp, 24572
+	ld a, $c0
+	ld hl, $5800
+	ld de, $5801
+	ld (hl), a
+	ld bc, $2ff
+	ldir				;borramos atributos papel negro tinta negra con brillo para detectar despues el bus si hace falta
+	ld a, $92
+	ld hl, $4000
+	ld de, $4001
+	ld (hl),a
+	ld bc, $17ff
+	ldir				;borramos datos pantalla con el patron para buscar el bus si hiciera falta
+
 	ld bc, $7ffd
 	ld de, $1110
 	ld hl, $C000
@@ -37,7 +51,15 @@ rom1
 	ld a, 1
 	jr es128k
 es48k
-	xor a
+	;ahora vamos a comprobar si tenemos acceso al bus o si pudiera ser un inves sin bus
+	ld hl, moverbuscheck					
+	ld de, buscheck.rom						
+	ld bc, endmoverbuscheck-moverbuscheck			
+	ldir				;movemos la tabla de datos y el cargador a la memoria donde no se vaya a modificar
+	call buscheck.rom
+	ld (tienebus),a
+	
+	xor a				;ponemos a 0 nuestro marcador de 128k ya que estamos en un 48k
 es128k
 	ld (esun128k), a
 
@@ -59,6 +81,50 @@ es128k
 ;activatrainer
 ;	ld (traineractivado), a
 	jp  codigocargador					;saltamos al codigo en la memoria principal
+
+
+moverbuscheck
+	DISP $8000
+buscheck.rom	
+	ld de, $0400		;nos da tiempo para leer leer del bus durante algo mas de un fotograma
+buclecomprobarbus.rom:
+	ld bc, $92ff		;10
+buscheck1.rom:
+	ld a, c				;4
+	ld a, c				;4		nos faltan 4t-states
+	in a, ($FF)			;11		vamos comprobando cada 33 t-states para ir alternando posiciones
+	cp b				;4		hasta encontrar un bipmap con $92
+	jp nz, endcheck.rom	;10		
+	ld a, 11			;7
+buscheck2.rom:
+	dec a				;4
+	jr nz, buscheck2.rom	;12/7		16x11+7 =183
+	ld a, $ff			;7		
+	in a, ($FF)			;11		comprobamos a los 224T-states el mimsmo bipmap de la siguiente linea
+	cp b				;4		si el caracter tambien es $92 continuamos
+	jp nz, 	endcheck.rom	;10		si no lo es volvemos a empezar
+	ld a, 9				;7
+buscheck3.rom:
+	and $ff				;7
+	dec a				;4
+	jp nz, buscheck3.rom	;10		14x13 =182
+	ld a, c				;4		me faltan 4 t-states para completar el tiempo de espera
+	in a, ($FF)			;11		comprobamos a los 225T-states en la siguiente linea el color
+	cp $C0				;7		
+	jp z, busencontrado.rom	;10		si el color es $C0 tenemos bus de 48k
+endcheck.rom:
+	dec de
+	ld a, d					;4
+	or e					;4
+	ld a,$ff				;7
+	jr nz, buclecomprobarbus.rom;12/5
+;							65 
+	ret		;si no hemos leido ningun dato del bus ponemos A=255 
+busencontrado.rom	
+	xor a					;si hemos leido del bus correctamente ponemos A=0 y usaremos el bus
+	ret
+endmoverbuscheck
+	ENT
 
 movercodigo
 	DISP #5d00 
@@ -283,18 +349,22 @@ arrancajuego
 	jr nz, continuateclacomo128
 
 	;estamos en modo 48k
+	;vamos a comprobar si es un inves para sincorinizar los halts con el dibujado de la pantalla
+	ld a, 33
+	call enviacomandosimple	;mapeamos la rom del sistema
+	ld a, ($153E)			;cargamos el valor de la direccion de la rom
+	cp $53					;comprovamos si es una "S" de "Sistema preparado"
+	jr z, saltoesuninves	
+	ld a, 0					;si no lo es ponemos a 0 la variable
+saltoesuninves
+	ld (esuninves), a		;cargamos en la variable 0 si no es un inves y el valor $53 si es un Inves
 	ld a, (MLDoffset2)
 	inc a
 	ld (rombank), a						;definimos el rombank actual a partir de aqui se va a usar esta variable 
-										;para actualizar la rom en la que estamos en modo 48k
+										;para actualizar la rom en la que estamos
+	call enviacomandosimple				;mapeamos el primer slot
 	ld a, 1 							
 	call Music_Play						;cargamos y reprducimos musica Intro permitiendo break con tecla
-
-;	ld a, (traineractivado)				;comprobamos si hay que activar el trainer cambiando el JR ;)
-;	or a								;solo en modo 48k y en el MLD
-;	jr z, continuateclacomun			;salta al inicio del juego
-;	xor a
-;	ld (trainer),a						;activamos el trainer
 	jr continuateclacomun				;salta al inicio del juego	
 
 	;estamos en 128k
@@ -832,24 +902,24 @@ mensaje
 endmensaje
 	ENT
 */
-	if  END_PAGE2 < $7800 
-			display "END_PAGE2:      ",/A,END_PAGE2 ," Quedan ",/d,$7800 - END_PAGE2," Bytes libres"
+	if  END_PAGE2 < $77CF 
+			display "END_PAGE2:      ",/A,END_PAGE2 ," Quedan ",/d,$77CF - END_PAGE2," Bytes libres hasta $77D0"
 	endif
 
-	if  END_CODE_PAGE3 < $AC80
-			display "END_CODE_PAGE3: ",/A,END_CODE_PAGE3 ," Quedan ",/d,$AC80 - END_CODE_PAGE3," Bytes libres"
+	if  END_CODE_PAGE3 < $AC7F
+			display "END_CODE_PAGE3: ",/A,END_CODE_PAGE3 ," Quedan ",/d,$AC7F - END_CODE_PAGE3," Bytes libres hasta $AC80"
 	endif
 
-	if END_PAGE2 > $7800 
+	if END_PAGE2 > $77CF 
 		display "END_PAGE2:      ",/A,END_PAGE2
-		display ">>>>>>>>>>>>>>>>> Error END_PAGE2 es mayor de $7800 <<<<<<<<<<<<<<<<<"
+		display ">>>>>>>>>>>>>>>>> Error END_PAGE2 es mayor de $77CF <<<<<<<<<<<<<<<<<"
 	endif
 
-	if END_CODE_PAGE3 > $AC80
+	if END_CODE_PAGE3 > $AC7F
 		display "END_CODE_PAGE3: ",/A,END_CODE_PAGE3 
 		display ">>>>>>>>>>>>>> Error END_CODE_PAGE3 es mayor de $AC80 <<<<<<<<<<<<<<<"
 	endif
-
+	
 /*
 rom17	
 	DISP 0

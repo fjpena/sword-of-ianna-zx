@@ -13,12 +13,14 @@
 	define MLD2A  $C8	
 	define LenFiladatos 8
 	define romgrabado	1
-	define esun128k 24575
-	define traineractivado  24574
+	define esun128k    24575
+	define tienebus    24574
+	define esuninves   24573
+	
 rom1	
 	org 0
 	include "inicio_rom.asm"					;incluye definidos los RST
-	ld sp, 24573
+	ld sp, 24572
 
 	xor a
 	ld (23400),a	  	; Clear NMI Counter
@@ -26,14 +28,16 @@ rom1
 	ei
 	halt				;sincronizamos con trazo
 	di
+	ld a, $c0
 	ld hl, $5800
 	ld de, $5801
-	ld (hl), l
+	ld (hl), a
 	ld bc, $2ff
 	ldir				;borramos atributos
+	ld a, $92
 	ld hl, $4000
 	ld de, $4001
-	ld (hl),l
+	ld (hl),a
 	ld bc, $17ff
 	ldir				;borramos datos pantalla
 	
@@ -57,6 +61,14 @@ rom1
 	ld a, 1				;ponemos a 1 nuestro marcador de 128k
 	jr es128k
 es48k
+	;ahora vamos a comprobar si tenemos acceso al bus o si pudiera ser un inves sin bus
+	ld hl, moverbuscheck					
+	ld de, buscheck.rom						
+	ld bc, endmoverbuscheck-moverbuscheck			
+	ldir				;movemos la tabla de datos y el cargador a la memoria donde no se vaya a modificar
+	call buscheck.rom
+	ld (tienebus),a
+	
 	xor a				;ponemos a 0 nuestro marcador de 128k ya que estamos en un 48k
 es128k
 	ld (esun128k), a	;actualizamos nuestra variable para usarla despues en ejecución
@@ -68,7 +80,38 @@ es128k
 
 	jp  codigocargador	;saltamos al codigo en la memoria principal
 
-
+moverbuscheck
+	DISP $8000
+buscheck.rom	
+	ld de, $0800			
+buclecomprobarbus.rom:
+	ld bc, $92ff		;10
+buscheck1.rom:
+	ld a, c				;4
+	ld a, c				;4		nos faltan 4 t-states para cuadrar
+	in a, ($FF)			;11		vamos comprobando cada 57 t-states para ir alternando posiciones
+	cp b				;4		hasta encontrar un bitmap con $92
+	jp nz, endcheck.rom	;10		
+buscheckcolor:
+	ld a, c				;4	
+	ld a, c				;4		nos faltan 4 t-states para cuadrar
+	in a, ($FF)			;11		comprobamos a los 33T-states en el color
+	cp $C0				;7		
+	jp z, busencontrado.rom	;10		si el color es $C0 tenemos bus de 48k
+endcheck.rom:
+	dec de					;6
+	ld a, d					;4
+	or e					;4
+	jp nz, buclecomprobarbus.rom;10
+;							65 
+	ld a, $ff
+	ret		;si no hemos leido ningun dato del bus ponemos A=255 
+busencontrado.rom	
+	xor a					;si hemos leido del bus correctamente ponemos a 0 la variable y usaremos el bus
+	ret
+endmoverbuscheck
+	ENT
+	
 movercodigo				;esta etiqueta esta en la ROM
 	DISP #5d00 					;Desplazamos el codigo para que el compilador lo compile en su posicion de RAM
 codigo					;esta etiqueta se corresponde con memoria principal en RAM $5D00
@@ -252,6 +295,7 @@ codigocargador		display "Inicio Cargador ",/d,$
 	ld a, 39		; Command 39 sets current rom Slot as reset slot
 	call enviacomandosimple  
 
+
 	
 	ld ix, b_pantalla
 	ld b, 1							    ;ponemos la cantidad de bloques a procesar
@@ -303,20 +347,30 @@ arrancajuego
 	jr nz, continuateclacomo128
 
 	;estamos en modo 48k
+	;vamos a comprobar si es un inves para sincorinizar los halts con el dibujado de la pantalla
+	ld a, 33
+	call enviacomandosimple	;mapeamos la rom del sistema
+	ld a, ($153E)			;cargamos el valor de la direccion de la rom
+	cp $53					;comprovamos si es una "S" de "Sistema preparado"
+	jr z, saltoesuninves	
+	ld a, 0					;si no lo es ponemos a 0 la variable
+saltoesuninves
+	ld (esuninves), a		;cargamos en la variable 0 si no es un inves y el valor $53 si es un Inves
 	ld a, (MLDoffset2)
 	inc a
 	ld (rombank), a						;definimos el rombank actual a partir de aqui se va a usar esta variable 
 										;para actualizar la rom en la que estamos
-
+	call enviacomandosimple				;mapeamos el primer slot
 	ld a, 1 							;cargamos musica Intro
 	call Music_Play
 	jr continuateclacomun				;salta al inicio del juego	
 
+	;estamos en 128k
 continuateclacomo128
 	ld a, 1								;ponemos borde azul mientras esperamos
 	out ($FE), a
 	call waitkp
-	
+	;seguimos comun
 continuateclacomun
 	xor a
 	out ($FE), a						;ponemos borde negro
@@ -880,20 +934,20 @@ rom32
 	block 16384-$,$ff
 	ENT
 
-	if  END_PAGE2 < $7800 
-			display "END_PAGE2:      ",/A,END_PAGE2 ," Quedan ",/d,$7800 - END_PAGE2," Bytes libres"
+	if  END_PAGE2 < $77CF 
+			display "END_PAGE2:      ",/A,END_PAGE2 ," Quedan ",/d,$77CF - END_PAGE2," Bytes libres hasta $77D0"
 	endif
 
-	if  END_CODE_PAGE3 < $AC80
-			display "END_CODE_PAGE3: ",/A,END_CODE_PAGE3 ," Quedan ",/d,$AC80 - END_CODE_PAGE3," Bytes libres"
+	if  END_CODE_PAGE3 < $AC7F
+			display "END_CODE_PAGE3: ",/A,END_CODE_PAGE3 ," Quedan ",/d,$AC7F - END_CODE_PAGE3," Bytes libres hasta $AC80"
 	endif
 
-	if END_PAGE2 > $7800 
+	if END_PAGE2 > $77CF 
 		display "END_PAGE2:      ",/A,END_PAGE2
-		display ">>>>>>>>>>>>>>>>> Error END_PAGE2 es mayor de $7800 <<<<<<<<<<<<<<<<<"
+		display ">>>>>>>>>>>>>>>>> Error END_PAGE2 es mayor de $77CF <<<<<<<<<<<<<<<<<"
 	endif
 
-	if END_CODE_PAGE3 > $AC80
+	if END_CODE_PAGE3 > $AC7F
 		display "END_CODE_PAGE3: ",/A,END_CODE_PAGE3 
 		display ">>>>>>>>>>>>>> Error END_CODE_PAGE3 es mayor de $AC80 <<<<<<<<<<<<<<<"
 	endif

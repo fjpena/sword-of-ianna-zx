@@ -78,7 +78,7 @@ FX_Play:
 	ld a, (hl)							;cargamos en A el efecto a usar
 	ld (efecto),a						;y modificamos el codigo con el efecto
 	dec hl
-	ld b, (hl)							;ponemos B
+	ld d, (hl)							;ponemos D
 	dec hl
 	ld e, (hl)							;ponemos E
 	xor a								;A a 0 para el borde negro
@@ -90,7 +90,8 @@ FX_Play:
 	ret
 
 loopfx0:	
-	out (254), a			;activamos desactivamos altavoz
+	ld bc, 24574
+	out (c), a			;activamos desactivamos altavoz
 	xor 16
 	ld c, e					;pausamos con el valor de E
 loopfx1:	
@@ -98,7 +99,8 @@ loopfx1:
 	jr nz,loopfx1
 efecto 
 	nop						;aqui ira el efecto,que será =nop ,=inc e ,=dec e
-	djnz loopfx0			;repetir B veces
+	dec d
+	jr nz, loopfx0			;repetir D veces
 	xor a					;desactivamos el altavoz y borde negro
 	out ($FE), a			;lo pasamos al puerto
 	ret
@@ -107,12 +109,12 @@ efecto
 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;***********************************************************************************************
 ;ANTEATER music routine for ZX Spectrum
-;by utz 08'2014
+;by utz 08'2014 modified by Spirax
 ;***********************************************************************************************
 
 ;se llama con 		A: musica a reprocducir 
 ;si llamamos a Music_Play si el valor de la musica es distinto de 0 nos permitira salir con cualquier tecla
-;si llamamos a Music_Play_Nopausa no permite parar a musica hasta que se acabe
+;si llamamos a Music_Play_Nopausa no permite parar la musica hasta que se acabe
 
 Music_Play:	
 	ld (keyreturn), a				;ponemos a en la pausa 
@@ -144,14 +146,12 @@ readPtn
 		ld a, (keyreturn)
 		or a
 		jr z, saltarsekeyb
-		in a, (#fe)
+		ld bc, 24574
+		in a, (c)
 		cpl
 		and #1f
 		ret nz
 saltarsekeyb		
-		ld a, #10
-		ld (switch1), a
-		ld (switch2), a
 		
 		ld hl, (PtnPntr)
 		ld a, (hl)			;check for pattern end		
@@ -167,7 +167,15 @@ saltarsekeyb
 		and %00000011
 		or a				;if !=0, we have drum
 		call nz, drums
-		
+
+		ld a, (I.esuninves)			;ahora comprobamos si estamos en un inves
+		or a						;si hay cualquier valor es un inves
+		jp nz, continuemusic.inves	;y saltamos a la rutina modificada para un Inves
+
+		ld a, #10
+		ld (switch1), a
+		ld (switch2), a
+	
 drdata		
 		inc hl
 		xor a
@@ -199,10 +207,9 @@ rdskip2
 ;**************************************************************************************************		
 play
 		ld a, h			;4	;load output mask ch2
-		
 		exx			    ;4
 		dec b			;4	;dec counter A
-		out (#fe), a	;11	;output ch2
+		out ($fe), a	;11	;output ch2
 		jr nz, wait1	;12/7
 		ld a, h			;4	;flip output mask and restore counter
 switch1 equ $+1					;mute switch
@@ -245,7 +252,7 @@ skip3
 		nop				;4	;take care of IO contention
 		jp nz,	play	;10
 						;184
-		jr readPtn
+		jp readPtn
 
 ;**************************************************************************************************
 
@@ -256,30 +263,18 @@ wait1
 wait2
 		;sla (hl)		;15
 		;sla (hl)		;15
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop				;4
+		inc hl			;6
+		dec hl			;6
+		inc hl			;6
+		dec hl			;6
 		jr skip2		;12
-						;46
-		
-		;ld (hl),b		;7	;why on earth I can't read the keyboard here
-		;in a,(#fe)		;11	;is a mystery to me.
-		;cpl			;4
-		;and #1f		;7
-		;ret nz			;11/5
-		;jr skip2		;12
-					
-
+						;36
 wait3
 		nop				;4
 		jr skip3		;12
 
 ;**************************************************************************************************
+;drums modificados para que funcionen en ambos modelos :)
 drums
 		push hl
 
@@ -305,17 +300,20 @@ tskip1
 		ld b, 12
 drum1a
 		ld a, #10
-		out (#fe), a
+		push bc
+		ld bc,24574
+		out (c), a
 		ld a, (hl)
 drumloop1
 		dec a
 		jr nz, drumloop1
-		out (#fe), a
+		out (c), a
 		ld a, (hl)
 drumloop2
 		dec a
 		jr nz, drumloop2	
 		inc hl
+		pop bc
 		djnz drum1a
 		jr drumret
 
@@ -332,7 +330,8 @@ tskip2
 		push bc
 drumloop30
 		ld a, #10
-		out (#fe), a
+		ld bc, 24574
+		out (c), a
 switch3 equ $+1
 		ld a, 6
 		ld b, (hl)
@@ -343,7 +342,8 @@ dl3a
 		pop hl
 		djnz dl3a
 		xor a
-		out (#fe), a
+		ld b, $5F
+		out (c), a
 		ld b, (hl)
 dl3b
 		push hl
@@ -366,3 +366,100 @@ PtnPntr
 		dw 0
 keyreturn
 		db 0
+		
+
+
+;**************************************************************************************************
+;rutina modificada para usar el puerto 24574 donde hay un 255 para que funcione en el inves
+;hay que ajustar timings
+
+continuemusic.inves:
+		ld a, #10
+		ld (switch1.inves), a
+		ld (switch2.inves), a
+	
+drdata.inves		
+		inc hl
+		xor a
+		ld d, (hl)			;counter ch2
+		ld e, d
+		push hl
+		ld h, #10			;output mask ch2
+		or d
+		jr nz, rdskip1.inves		
+		ld h, a				;mute if note byte = 0
+rdskip1.inves
+		ld l, h				;swap mask
+		exx
+		pop hl
+		inc hl
+		ld b, (hl)			;counter A
+		or b
+		jr nz, rdskip2.inves
+		ld (switch1.inves), a
+		ld (switch2.inves), a
+rdskip2.inves
+		ld c, b				;backup counter A/B
+		ld d, b				;counter B
+		inc hl
+		ld (PtnPntr), hl
+		ld hl, #1000			;output mask ch1
+		exx
+
+;**************************************************************************************************		
+play.inves
+		ld a, h			;4	;load output mask ch2
+		exx			    ;4
+		dec b			;4	;dec counter A
+		push bc			;+11
+		ld bc, 24574	;+10
+		out (c), a		;11+1	;output ch2
+		pop bc			;+10
+		jr nz, skip1.inves	;12/7		quitamos el wait ya que hemos metido mas t-states
+		ld a, h			;4	;flip output mask and restore counter
+switch1.inves equ $+1					;mute switch
+		xor #10			;7
+		ld h, a			;4
+		ld b, c			;4
+skip1.inves
+		dec d			;4	;dec counter B
+		ld a, l			;4	;load output mask ch1
+		jr nz, skip2.inves	;12/7		nos saltamos la pausa ya que hemos metido mas t-states
+		ld d, c			;4	;restore counter
+switch2.inves equ $+1			;mute switch
+		xor #10			;7	;swap output mask
+		ld l, a			;4
+		
+		rra				;4	;increment counter to create pwm effect if output mask = #10
+		rra				;4
+		rra				;4
+		rra				;4
+		add a, d		;4
+		ld d, a			;4
+		
+skip2.inves
+		ld a, l			;4
+		and h			;4	;combine output masks
+		push bc
+		ld bc, 24574
+		out (c),a		;11	;output ch1
+		pop bc
+		
+		exx				;4
+		dec d			;4	;decrement counter ch1
+		jp nz, skip3.inves	;10			;quitamos el pausa ya que hemos metido mas t-states
+		ld d, e			;4	;restore counter
+		ld a, h			;4	;swap output mask
+		xor l			;4
+		ld h, a			;4
+		
+skip3.inves		
+		dec bc			;6	;decrement speed counter
+		ld a, b			;4
+		or c			;4
+		nop				;4	;take care of IO contention
+		jp nz,	play.inves	;10
+						;184
+		jp readPtn
+
+;**************************************************************************************************

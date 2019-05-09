@@ -426,7 +426,7 @@ drawsprite_24x32_lessthan32lines:
 	ld b,0					; Clear B for the addition
 	add hl, bc				; hl = address of the first tile
 	ld c, (hl)
-	inc hl
+	inc l
 	ld b, (hl)				; BC = Address
 	ld l,a					; hl = X
 	ld h, 0
@@ -517,18 +517,18 @@ drawsprite_24x32_mirror_lessthan32lines:
 	rrca
 	rrca
 	and $3f			; C = 2*Y (in char), to address the table
-	ld c,a
+	ld c, a
 	ld a, b			; A = X
 	rrca
 	rrca
 	rrca
 	and $1f			; A = X (in char)
-	ld b,0			; Clear B for the addition
+	ld b, 0			; Clear B for the addition
 	add hl, bc		; hl = address of the first tile
 	ld c, (hl)
-	inc hl
+	inc l
 	ld b, (hl)		; BC = Address
-	ld l,a			; hl = X
+	ld l, a			; hl = X
 	ld h, 0
 	add hl, bc		; hl = address in video memory
 

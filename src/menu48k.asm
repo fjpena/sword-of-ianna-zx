@@ -2,7 +2,7 @@
 org $0000
 INCLUDE "ianna48k.sym"
 
-marcador: incbin "marcador.scr"
+marcador: incbin "marcador48k.scr"
 marcador_armas: dw marcador_armas_sword, marcador_armas_eclipse, marcador_armas_axe, marcador_armas_blade
 
 marcador_armas_sword:
@@ -49,10 +49,95 @@ HEX_TO_TEXT_ram6: jp HEX_TO_TEXT
 ENCODE_ram6: jp ENCODE
 intro_p6: jp intro
 ending_p6: jp ending
+cambianivel_p6: 
+cambianivel:						
+	push de
+	ld a, $F7
+	in A, ($FE)						; leemos fila 1-2-3-4-5
+	bit 0, A                		; Leemos la tecla 1
+	jr nz, no1						
+	ld a, 1
+	jr nuevonivel
+no1:
+	bit 1, A                		; Leemos la tecla 2
+	jr nz, no2						
+	ld a, 2
+	jr nuevonivel
+no2:
+	bit 2, A                		; Leemos la tecla 3
+	jr nz, no3						
+	ld a, 3
+	jr nuevonivel
+no3:
+	bit 3, A                		; Leemos la tecla 4
+	jr nz, no4
+	ld a, 4
+	jr nuevonivel
+no4:
+	bit 4, A                		; Leemos la tecla 5
+	jr nz, no5						
+	ld a, 5
+	jr nuevonivel
+no5:
+	ld a, $EF
+ 	in A, ($FE)						; leemos fila 0-9-8-7-6
+	bit 0, A                		; Leemos la tecla 0
+	jr nz, no0						
 
-FONT: 
+	ld a, 0
+	jr nuevonivel
+no0:
+	bit 1, A                		; Leemos la tecla 9
+	jr nz, no9						
+	ld a, 9
+	jr nuevonivel
+no9:
+	bit 2, A                		; Leemos la tecla 8
+	jr nz, no8						
+	ld a, 8
+	jr nuevonivel
+no8:
+	bit 3, A                		; Leemos la tecla 7
+	jr nz, no7
+	ld a, 7
+	jr nuevonivel
+no7:
+	bit 4, A                		; Leemos la tecla 6
+	jr nz, endcambianivel
+	ld a, 6
+nuevonivel:
+	ld (current_level),a
+	xor a
+	ld (show_passwd), a
+	ld a, 15
+	ld (player_experience), a 
+	ld a, 1
+	ld de,player_available_weapons
+	ld (de),a
+	inc de
+	ld (de),a
+	inc de
+	ld (de),a
+	inc de
+	ld (de),a
+    
+	ld (intro_shown), a
+
+	ld a, 7
+	ld (player_level), a
+
+endcambianivel
+	xor a
+	out (254),a
+	pop de
+	ret
+
+
+
+org $1D00 			;para alinear las fuentes
+FONT:
 include "font.asm"
-cambianivel_p6: jp cambianivel
+
 ; Main menu
 
 ;screen_to_show:   db 0
@@ -704,11 +789,11 @@ credit_setattr:
 	ld a, 16
 credit_setattr_loop:
 	push af
-	push bc
-	push de
+;	push bc
+;	push de
 	call SetAttribute
-	pop de
-	pop bc
+;	pop de
+;	pop bc
 	inc b
 	pop af
 	dec a
@@ -1188,19 +1273,31 @@ print_string_double:
 ;	- C: Y in chars
 
 print_char_double:
-	sub 32		; first char is number 32
-	
-	ld e, a
-	ld d, 0
-	rl e
-	rl d
-	rl e
-	rl d
-	rl e
-	rl d		; Char*8, to get to the first byte
-	ld hl, FONT
-	add hl, de	; HL points to the first byte
-	ex de, hl	; DE points to the first byte
+;	sub 32				;7 first char is number 32
+;	ld e, a				;4
+;	ld d, 0				;7
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8 Char*8, to get to the first byte
+;	ld hl, FONT			;10
+;	add hl, de			;11 HL points to the first byte
+;	ex de, hl			;4 DE points to the first byte
+	;					91 total 
+
+	ld l, a 					;4
+	ld h, 0						;7
+	add hl,hl					;11 duplicamos HL (x2)
+	add hl,hl					;11 duplicamos HL (x4 en total)
+	add hl,hl					;11 duplicamos HL (x8 en total)
+	ld a, high FONT - 1			;7
+	add a, h					;4
+	ld d, a 					;4
+	ld e, l						;4
+	;							63 total
+
 
 print_char_double_go:
 ;	ld a, (rombank)		;Sistem var with the previous value
@@ -1211,16 +1308,17 @@ print_char_double_go:
 ;	pop bc
 
 	ld hl, TileScAddress	; address table
-	ld a, c
-	add a,c			; C = 2*Y, to address the table
-	ld c,a
+;	ld a, c
+;	add a,c			; C = 2*Y, to address the table
+;	ld c,a
 	ld a, b			; A = X
 	ld b,0			; Clear B for the addition
+	add hl, bc
 	add hl, bc		; hl = address of the first tile
 	ld c, (hl)
-	inc hl
+	inc l
 	ld b, (hl)		; BC = Address
-	ld l,a			; hl = X
+	ld l, a			; hl = X
 	ld h, 0
 	add hl, bc		; hl = tile address in video memory
 
@@ -1615,90 +1713,6 @@ wave_cycleattr_exit:
   ; FIN PACO  
   ; -------------------------------
   ret
-
-
-cambianivel:						
-	push de
-	ld a, $F7
-  	in A, ($FE)						; leemos fila 1-2-3-4-5
-	bit 0, A                		; Leemos la tecla 1
-	jr nz, no1						
-	ld a, 1
-	jr nuevonivel
-no1:
-	bit 1, A                		; Leemos la tecla 2
-	jr nz, no2						
-	ld a, 2
-	jr nuevonivel
-no2:
-	bit 2, A                		; Leemos la tecla 3
-	jr nz, no3						
-	ld a, 3
-	jr nuevonivel
-no3:
-	bit 3, A                		; Leemos la tecla 4
-	jr nz, no4
-	ld a, 4
-	jr nuevonivel
-no4:
-	bit 4, A                		; Leemos la tecla 5
-	jr nz, no5						
-	ld a, 5
-	jr nuevonivel
-no5:
-	ld a, $EF
-  	in A, ($FE)						; leemos fila 0-9-8-7-6
-	bit 0, A                		; Leemos la tecla 0
-	jr nz, no0						
-
-	ld a, 0
-	jr nuevonivel
-no0:
-	bit 1, A                		; Leemos la tecla 9
-	jr nz, no9						
-	ld a, 9
-	jr nuevonivel
-no9:
-	bit 2, A                		; Leemos la tecla 8
-	jr nz, no8						
-	ld a, 8
-	jr nuevonivel
-no8:
-	bit 3, A                		; Leemos la tecla 7
-	jr nz, no7
-	ld a, 7
-	jr nuevonivel
-no7:
-	bit 4, A                		; Leemos la tecla 6
-	jr nz, endcambianivel
-	ld a, 6
-nuevonivel:
-	ld (current_level),a
-	xor a
-	ld (show_passwd), a
-	ld a, 15
-	ld (player_experience), a 
-	ld a,1
-	ld de,player_available_weapons
-	ld (de),a
-	inc de
-	ld (de),a
-	inc de
-	ld (de),a
-	inc de
-	ld (de),a
-    
-	ld (intro_shown), a
-
-	ld a, 7
-	ld (player_level), a
-
-endcambianivel
-	xor a
-	out (254),a
-	pop de
-	ret
-
 
 menu_screen: incbin "menu_screen.cmp"
 

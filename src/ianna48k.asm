@@ -1,9 +1,12 @@
 I.MLDoffset2:		EQU 23808
-I.sectorgrabar	EQU	23809
+I.sectorgrabar		EQU	23809
 I.romsectorgrabar	EQU	23810
 I.hlsectorgrabar	EQU	23811
 I.SAVEPREFS 		EQU 23813
 I.enviacomandosimple:	equ 23873
+I.tienebus			EQU 24574
+I.esuninves			EQU 24573
+
 org 24576
 
 CURRENT_SCREEN_MAP:	EQU $FE00
@@ -13,7 +16,7 @@ CURRENT_SCREEN_OBJECTS: EQU CURRENT_SCREEN_MAP + 200
 mainmenu_p6: EQU $1C63
 intro_in_p6: EQU $1C6C
 ending_in_p6: EQU $1C6F
-cambianivel_in_p6: EQU $1E72
+;cambianivel_in_p6: EQU $1C72
 
 start:
 init_engine:
@@ -42,10 +45,10 @@ ENDIF
 
  	ld a, 1
 	ld (show_passwd), a
-trainer: EQU $+1
-	jr saltarseeltrainer
-	call cambianivel_in_p6  		;fixme solo para probar los niveles
-saltarseeltrainer:
+;trainer: EQU $+1
+;	jr saltarseeltrainer
+;	call cambianivel_in_p6  		;fixme solo para probar los niveles
+;saltarseeltrainer:
     ; Check if this is the first time the intro is run,
     ; and only run it if we are in level 1
     ld a, (current_level)
@@ -184,22 +187,28 @@ mainloop_go:
 	ld a, FX_PAUSE
 	call FX_Play
 mainloop_nopause:
+;	ld bc, KEY_S
+;	call GET_KEY_STATE
+;	call z, action_checkpoint
+	
 	; Run scripts
 	call RunScripts
-	ld a, (ndirtyrects)
-	cp 2
-	jr nc, noesperarscripts		;si es igual o  mayor que 2 no esperamos al halt
-	halt
-noesperarscripts:
+;	ld a, (ndirtyrects)
+;	cp 2
+;	jr nc, noesperarscripts		;si es igual o  mayor que 2 no esperamos al halt
+;	halt
+;noesperarscripts:
+	call buscheck
 	call RedrawScreen_nohalt
 
 	; Check gravities
 	call CheckGravities
-	ld a, (ndirtyrects)
-	cp 2
-	jr nc, noesperargravities	;si es igual o  mayor que 2 no esperamos al halt
-	halt
-noesperargravities:
+;	ld a, (ndirtyrects)
+;	cp 2
+;	jr nc, noesperargravities	;si es igual o  mayor que 2 no esperamos al halt
+;	halt
+;noesperargravities:
+	call buscheck
 	call RedrawScreen_nohalt
 
 	ld a, (animate_tile)
@@ -209,11 +218,6 @@ noesperargravities:
 	call z, AnimateSTiles
 	
 	call waitforVBlank
-
-;	ld a, (animate_tile)
-;	and 1
-;	call nz, Redrawstatus
-
 
 	ld a, (player_dead)
 	and a
@@ -313,13 +317,13 @@ pause_menu_print_attr:
 	ld b, 8
 pause_menu_print_attr_loop:
 	ld e, (hl)
-	push bc
+;	push bc
 	push hl
 	push af
 	call SetAttribute
 	pop af
 	pop hl
-	pop bc
+;	pop bc
 	inc b
 	inc hl
 	dec a
@@ -336,19 +340,24 @@ pause_menu_print:
 	ld c, 8
 	ld hl, pause_attr0
 	call pause_menu_print_attr
-	ld c, 9
+;	ld c, 9
+	inc c
 ;	ld hl, pause_attr1
 	call pause_menu_print_attr1
-	ld c, 10
+;	ld c, 10
+	inc c
 ;	ld hl, pause_attr1
 	call pause_menu_print_attr1
-	ld c, 11
+;	ld c, 11
+	inc c
 ;	ld hl, pause_attr1
 	call pause_menu_print_attr1
-	ld c, 12
+;	ld c, 12
+	inc c
 	ld hl, pause_attr2
 	call pause_menu_print_attr
-	ld c, 13
+;	ld c, 13
+	inc c
 	ld hl, pause_attr3
 	call pause_menu_print_attr
 
@@ -517,7 +526,8 @@ RunScripts:
 	and a
 	ret nz
 
-	call RedrawScreen			;<<<<<<<
+	call buscheck
+	call RedrawScreen_nohalt			;<<<<<<<
 
 	ld ix, ENTITY_ENEMY1_POINTER
 	ld a, (ix+0)
@@ -533,7 +543,8 @@ RunScripts:
 	ld ix, ENTITY_ENEMY1_POINTER
 	call action_joystick
 
-	call RedrawScreen			;<<<<<<<
+;	call buscheck
+;	call RedrawScreen_nohalt			;<<<<<<<
 
 runs_noenemy1:
 	ld ix, ENTITY_ENEMY2_POINTER
@@ -558,18 +569,19 @@ runs_enemy2_go:
 	ld ix, ENTITY_ENEMY2_POINTER
 	call action_joystick
 
-	ld a, (frames_noredraw)		;comprobamos los frames 
-	cp 1						;si es 1 no hemos pintado el enemigo1 y podemos hacer un halt
-	jr nz , hacerpausaenemigo2	;si no es 1 hacemos una mini pausa para dejar pasar el haz y pintar el enemigo2 sin halt
-	halt						;si no hemos pintado el enemigo1 podemos hacer un halt
-	jr pausaenemigo2			;y redibujamos con una pausa de 1
-hacerpausaenemigo2
-	ld a, 130					;hacemos una pausa de 2600 T-States
-pausaenemigo2
-	nop
-	dec a
-	jr nz, pausaenemigo2
+;	ld a, (frames_noredraw)		;comprobamos los frames 
+;	cp 1						;si es 1 no hemos pintado el enemigo1 y podemos hacer un halt
+;	jr nz , hacerpausaenemigo2	;si no es 1 hacemos una mini pausa para dejar pasar el haz y pintar el enemigo2 sin halt
+;	halt						;si no hemos pintado el enemigo1 podemos hacer un halt
+;	jr pausaenemigo2			;y redibujamos con una pausa de 1
+;hacerpausaenemigo2
+;	ld a, 130					;hacemos una pausa de 2600 T-States
+;pausaenemigo2
+;	nop
+;	dec a
+;	jr nz, pausaenemigo2
 	
+	call buscheck
 	call RedrawScreen_nohalt			;<<<<<<< pintamos con "_nohalt" para mantener los frames a 5
 ;										;se mantiene velocidad y solo parpadea alguna vez en ataque
 
@@ -645,28 +657,31 @@ RedrawScreen_nohalt:
 ;	halt
 ClearDirtyRedraw:
 	xor a
-	ld (ndirtyrects),a
-	ld (spritecaida1), a
-	ld (spritecaida2), a
-	ld (spritecaida3), a
+	ld hl, spritecaida1
+	ld (hl), a
+	inc hl
+	ld (hl), a
+	inc hl
+	ld (hl), a
+	
+	ld hl, ndirtyrects
+	ld a, (hl)
+	and a
+	ret z
+	add a, a
+	add a, a
+	ld b, a
+	xor a
+	ld (hl),a
 	
 	ld hl, tiles_dirty		
-	ld bc, 191		; Just fill the whole structure with zeroes
-	ld (hl), b
-	ld de, tiles_dirty+1
-	ldir
+bucle_borrado_dirty
+	ld (hl), a
+	inc l
+	djnz bucle_borrado_dirty
 
 	ret
 
-Redrawstatus:
-	call draw_barbarian_state
-	ld ix, ENTITY_ENEMY1_POINTER
-	ld a, 24
-	call draw_enemy_state
-	ld ix, ENTITY_ENEMY2_POINTER
-	ld a, 27
-	call draw_enemy_state
-	jr ClearDirtyRedraw
 
 ; ISR routine
 ISR:
@@ -1156,6 +1171,71 @@ WEAPON_BLADE: 	EQU 3
  INCLUDE "scripts48k.asm"	 ; Script code
 ;				 level1, level2, level3, level4, level5, level6, level7, level8, attrac, secret, nomus   	gameover      main menu
 ;music_levels: dw music1, music5, music3, music4, music5, music6, music7, music8, music0, music4, music0,  music_gameover, music_menu
+
+
+;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+;variables added from different rutines than now run on ROM
+
+intromusicpage	db 0
+intro_var: db 0
+number_screens: db 0
+menu_string_list: dw 0
+menu_screen_list: dw 0
+menu_attr_list: dw 0
+menu_cls_loop: db 0
+
+screen_to_show:   db 0
+timer: db 0
+menu_option: db 0
+
+menu_loops: db 0
+
+password_string: db "          ",0
+password_value:  db 0, 0, 0, 0, 0	; current_level	| player_available_weapons, player_level, player_exp, player_current_weapon, cksum
+
+menu_running: db 0
+menu_counter: db 0
+
+changed_settings: db 0
+intro_shown: db 0
+cls_loop: db 0
+
+attribute_cycle: db 2
+
+start_delta: db 0
+current_delta: db 0
+current_y: db 0
+
+credit_timer: db 0
+credit_current: db 0
+
+current_string_list: dw 0		;string_list_es
+
+joystick_status: db 0
+save_level: db 0
+
+current_redefine_strings: dw 0		;redefine_es
+
+forbidden_keys: dw KEY_H, 0, 0, 0, 0, 0, 0
+n_forbidden_keys: dw 1 	; 1 key (for now)
+
+rombank:	db 1
+romatbank1:	db 0
+;romatbank4: db 18
+
+score_password_string: db "PASSWORD:1234567890",0
+score_password_value: db 0,0,0,0,0
+
+draw_blank: db 0
+draw_char: db 0
+
+spritecaida1: db 0
+spritecaida2: db 0
+spritecaida3: db 0
+spritegravity: db 0
+;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 ; Random routine from http://wikiti.brandonw.net/index.php?title=Z80_Routines:Math:Random
 ;-----> Generate a random number
 ; ouput a=answer 0<=a<=255
@@ -1289,70 +1369,36 @@ Div8_NoAdd:
     cpl
     ret
 
-;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-;variables added from different rutines than now run on ROM
 
-intromusicpage	db 0
-intro_var: db 0
-number_screens: db 0
-menu_string_list: dw 0
-menu_screen_list: dw 0
-menu_attr_list: dw 0
-menu_cls_loop: db 0
+END_PAGE2:			;no debe pasar de $77CF	ya que en $7800 se cargan los strings del nivel <<<<<<<<<<<<<<<<<<
+org $77D0			;hemos alineado la Tabla de direcciones aqui por lo que END_PAGE2 como maximo ahora es $77CF
+	
+TileScAddress:	; Screen address for each tile start, considering it starts on $4000
+	dw 16384 ; Y = 0
+	dw 16416 ; Y = 1
+	dw 16448 ; Y = 2
+	dw 16480 ; Y = 3
+	dw 16512 ; Y = 4
+	dw 16544 ; Y = 5
+	dw 16576 ; Y = 6
+	dw 16608 ; Y = 7
+	dw 18432 ; Y = 8
+	dw 18464 ; Y = 9
+	dw 18496 ; Y = 10
+	dw 18528 ; Y = 11
+	dw 18560 ; Y = 12
+	dw 18592 ; Y = 13
+	dw 18624 ; Y = 14
+	dw 18656 ; Y = 15
+	dw 20480 ; Y = 16
+	dw 20512 ; Y = 17
+	dw 20544 ; Y = 18
+	dw 20576 ; Y = 19
+	dw 20608 ; Y = 20
+	dw 20640 ; Y = 21
+	dw 20672 ; Y = 22
+	dw 20704 ; Y = 23
 
-screen_to_show:   db 0
-timer: db 0
-menu_option: db 0
-
-menu_loops: db 0
-
-password_string: db "          ",0
-password_value:  db 0, 0, 0, 0, 0	; current_level	| player_available_weapons, player_level, player_exp, player_current_weapon, cksum
-
-menu_running: db 0
-menu_counter: db 0
-
-changed_settings: db 0
-intro_shown: db 0
-cls_loop: db 0
-
-attribute_cycle: db 2
-
-start_delta: db 0
-current_delta: db 0
-current_y: db 0
-
-credit_timer: db 0
-credit_current: db 0
-
-current_string_list: dw 0		;string_list_es
-
-joystick_status: db 0
-save_level: db 0
-
-current_redefine_strings: dw 0		;redefine_es
-
-forbidden_keys: dw KEY_H, 0, 0, 0, 0, 0, 0
-n_forbidden_keys: dw 1 	; 1 key (for now)
-
-rombank:	db 1
-romatbank1:	db 0
-;romatbank4: db 18
-
-score_password_string: db "PASSWORD:1234567890",0
-score_password_value: db 0,0,0,0,0
-
-draw_blank: db 0
-draw_char: db 0
-
-spritecaida1: db 0
-spritecaida2: db 0
-spritecaida3: db 0
-spritegravity: db 0
-
-;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-END_PAGE2:			;no debe pasar de $77FF			<<<<<<<<<<<<<<<<<<
 
 org $8000
 IM2table: ds 257	 			; IM2 table (reserved)
@@ -1368,8 +1414,74 @@ IM2table: ds 257	 			; IM2 table (reserved)
  INCLUDE "io-48k.asm"
 
 
+buscheck:
+	ld a, (ndirtyrects)			;comprobamos si hay dirtys que borrar
+	or a
+	ret z						;si no hay ninguno regresamos
+
+	ld a, (I.tienebus)		;comprobamos si tenemos floating bus
+	or a
+	jr nz, buscheckinves		;si es un Inves saltamos a hacer halt+pausa ya que no soporta floating bus
+
+	ld bc, $92ff		;10
+buscheck1:
+	nop					;4		ajuste nos faltan 4t-states
+	ld a, c				;4
+	in a, ($FF)			;11		vamos comprobando cada 33 t-states para ir alternando posiciones
+	cp b				;4		hasta encontrar un bipmap con $92
+	jp nz, buscheck1	;10		
+	ld a, 10			;7
+buscheck2:
+	and c				;4		 
+	dec a				;4
+	jp nz, buscheck2	;10		18x10 =180
+	nop					;4		ajuste 
+	nop					;4		ajuste
+	ld a, c				;4		
+	in a, ($FF)			;11		comprobamos a los 224T-states el mimsmo bipmap de la siguiente linea
+	cp b				;4		si el caracter tambien es $92 continuamos
+	jp nz, 	buscheck1	;10		si no lo es volvemos a empezar
+	ld a, 9				;7
+buscheck3:
+	and $ff				;7
+	dec a				;4
+	jp nz, buscheck3	;10		21x9 =189
+	ld a, c				;4		
+	in a, ($FF)			;11		comprobamos a los 225T-states en la siguiente linea el color
+	cp $01				;7		si el color es $01 estamos donde queremos
+	jp nz, 	buscheck1	;10		si no volvemos a empezar
+
+	ret					;al llegar aqui estamos en la linea del marcador
+;						;y podemos empezar a borrar los dirty
+buscheckinves:
+	halt				;sincronizamos con inicio pantalla
+	ld bc, $04C0		;hacemos una pausa para alcanzar la linea 18 en un inves
+buscheckinves1			;para situarnos en el 3er tercio de pantalla
+	dec bc				;y empezar a borrar
+	ld a, b
+	or c
+	jr nz, buscheckinves1
+	;aqui tenemos que comprobar si es un inves y salir si lo es
+	;pero si no lo es añadir otra pausa para llegar al 3er tercio ya que lo clonicos empiezan a pintar la pantalla por el borde
+
+	ld a, (I.esuninves)		;comprobamos si es un inves
+	or a
+	ret nz					;cualquier valor distinto de cero es un inves y regresamos
+	
+	ld bc, $0190			;pero si no es un inve tenemos que añadir otra pausa para llegar a la linea 18
+buscheckclonico1			;para situarnos en el 3er tercio de pantalla
+	dec bc					;y empezar a borrar
+	ld a, b
+	or c
+	jr nz, buscheckclonico1
+
+
+	ret
+
 
 END_CODE_PAGE3:		;no debe pasar de $AC7F			<<<<<<<<<<<<<<<<<<
+org $ac80			;por protecion si nos pasamos de aqui saltara un error al compilar
+
 org $BD00
  INCLUDE "rotatetable48k.asm"	; sprite rotation tables
 

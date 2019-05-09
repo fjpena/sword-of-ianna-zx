@@ -33,7 +33,7 @@ InitTiles:
 	ld (hl), l
 	ld de, 16384+1
 	ld bc, 6911
-	ldir			; clean shadow screen
+	ldir			; clean main screen
 
 ;	di
 ;	call setrambank7
@@ -97,27 +97,48 @@ drawsc_x_loop:
 ;	E: attribute
 SetAttribute:
 	; BC = Y*32+X, to address the memory array
-	push bc
-	push de
-	ld a, c										; 4
-	rrca
-	rrca
-	rrca			; XXXYYYYY						; 12
-	ld c, a										; 4
-	and $E0										; 7
-	or b										; 4
-	ld b, a										; 4
-	ld a, c										; 4
-	and $1f										; 7
-	ld c, b										; 4
-	ld b, a										; 4. 54 rather than 103
+;	push bc										;11	no se altera no hay que guardalo
+;	push de										;11 no se altera no hay que guardalo
 
-	ld hl, 16384+6144							; 10	attribute area in screen
-	add hl, bc									; 11 so HL points to the byte in the attribute area...
+;	ld a, c										; 4
+;	rrca
+;	rrca
+;	rrca			; XXXYYYYY					; 12
+;	ld c, a										; 4
+;	and $E0										; 7
+;	or b										; 4
+;	ld b, a										; 4
+;	ld a, c										; 4
+;	and $1f										; 7
+;	ld c, b										; 4
+;	ld b, a										; 4. 54 rather than 103
+;	ld hl, 16384+6144							; 10	attribute area in screen
+;	add hl, bc									; 11 so HL points to the byte in the attribute area...
+;												75 + 42 del push & pop
+
+	ld a, c										;4
+	and 7										;7
+	rrca										;4
+	rrca										;4
+	rrca										;4	
+	or b										;4
+	ld l, a										;4
+	ld a, c										;4
+	and 24										;7
+	rra											;4
+	rra											;4
+	rra											;4
+	or 88										;7
+	ld h,a										;4
+;												65 ahorramos 52 t-states y 22 bytes
+
+
+
 	ld (hl), e		; and the attribute is stored!
-	pop de
-	pop bc
+;	pop de										;10
+;	pop bc										;10
 	ret
+
 
 ; Draw a tile of a supertile anywhere on screen, including its attribute
 ;
@@ -131,48 +152,62 @@ DrawStile_tile:
 	push bc
 	push bc
 	; The offset in the stile array is A*4+offset
-	ld b, 0
-	rl a
-	rl b
-	rl a
-	rl b
-	add a, e
-	ld c, a		; DE has the offset
-
+	ld b, 0					;7
+	rl a					;8
+	rl b					;8
+	rl a					;8
+	rl b					;8
+	add a, e				;4
+	ld c, a					;4 BC has the offset
+	;						;47
 	ld hl, SUPERTILE_COLORS
 	add hl, bc
 	ld a, (hl)	; A has the attribute
-	ld (ATTRIBUTE), a
-
+;	ld (ATTRIBUTE), a	;ahorramos 7 t-states y 2 bytes usando A'
+	ex af, af'			;' 
+	
 	ld hl, SUPERTILE_DEF
 	add hl, bc
-	ld a, (hl)	; A has the first tile number
+;	ld a, (hl)		;7	 A has the first tile number
+;	ld c, a			;4
+;	ld b, 0			;7
+;	rl c			;8
+;	rl b			;8
+;	rl c			;8
+;	rl b			;8
+;	rl c			;8
+;	rl b			;8 Tile number * 8 
+;	ld hl, TILEMAP	;10
+;	add hl, bc		;11 HL points to the first line of the tile
+;	ex de, hl		;4 and save it in DE
+;					91
 
-	ld c, a
-	ld b, 0
-	rl c
-	rl b
-	rl c
-	rl b
-	rl c
-	rl b		; Tile number * 8 
-	ld hl, TILEMAP
-	add hl, bc	; HL points to the first line of the tile
-	ex de, hl	; and save it in DE
+	ld c, (hl)		;7 C has the first tile number
+	ld b, 0			;7
+	ld h, b			;4
+	ld l, c			;4
+	add hl, bc		;11 x2
+	add hl, hl		;11 x4
+	add hl, hl		;11 x8
+	ld de, TILEMAP	;10
+	add hl, de		;11 HL points to the first line of the tile
+	ex de, hl		;4 and save it in DE
+;					80	ahorramos 11 t-states y 3 Bytes
 	pop bc
-	push bc
+;	push bc			;con la nueva formula no lo vamos a volver a usar no hace falta guardarlo
 
 	ld hl, TileScAddress	; address table
-	ld a, c
-	add a,c			; C = 2*Y, to address the table
-	ld c,a
+;	ld a, c			;4
+;	add a,c			;4 C = 2*Y, to address the table
+;	ld c,a			;4
 	ld a, b			; A = X
-	ld b,0			; Clear B for the addition
+	ld b, 0			; Clear B for the addition
+	add hl, bc		;11 ahorramos 1 t-state y 2 bytes
 	add hl, bc		; hl = address of the first tile
 	ld c, (hl)
-	inc hl
+	inc l
 	ld b, (hl)		; BC = Address
-	ld l,a			; hl = X
+	ld l, a			; hl = X
 	ld h, 0
 	add hl, bc		; hl = tile address in video memory
 
@@ -209,24 +244,37 @@ DrawStile_tile:
 	
 	; now look after the attribute
 	
-	pop bc		; get X and Y back
+;	pop bc		; get X and Y back , ya no lo necesitamos vamos a calcular sobre HL
+
 
 	; BC = Y*32+X, to address the memory array
-	rrc c
-	rrc c
-	rrc c			; XXXYYYYY						; 24
-	ld a, c										; 4
-	and $E0										; 7
-	or b										; 4
-	ld b, a										; 4
-	ld a, c										; 4
-	and $1f										; 7
-	ld c, b										; 4
-	ld b, a										; 4. 62 rather than 103
+;	rrc c
+;	rrc c
+;	rrc c			; XXXYYYYY					; 24
+;	ld a, c										; 4
+;	and $E0										; 7
+;	or b										; 4
+;	ld b, a										; 4
+;	ld a, c										; 4
+;	and $1f										; 7
+;	ld c, b										; 4
+;	ld b, a										; 4. 62 rather than 103
 
-	ld hl, 16384+6144	; attribute area in screen
-	add hl, bc		; so HL points to the byte in the attribute area...
-	ld a, (ATTRIBUTE)
+;	ld hl, 16384+6144							;10 attribute area in screen
+;	add hl, bc									;11 so HL points to the byte in the attribute area...
+;	ld a, (ATTRIBUTE)							;13
+;												96
+
+	ld a, h							;4 para calcular la direccion de attributos
+	and %00011000					;7 solo necesitamos saber en que tercio de la pantalla está
+	rra								;4 ya que L seguira igual
+	rra								;4 hacemos AND 24 y rotamos los bits 3 y 4 hasta los bits 1 y 2
+	rra								;4
+	or $58							;7 y se lo sumamos a la direccion de inicio de atributos de pantalla
+	ld h, a							;4 pasandolo a H, ahora HL tendra la direccion completa del atributo
+	ex af, af'		;'				;4	recuperamos el atributo que guardamos al principio
+;									38  rather than 96 :)
+
 	ld (hl), a		; and the attribute is stored!
 	pop bc
 	pop af
@@ -383,11 +431,11 @@ InvalidateTiles:
 	add hl, de		; HL points to the dirty rectangle area
 	pop de
 	ld (hl), b
-	inc hl
+	inc l
 	ld (hl), c	
-	inc hl
+	inc l
 	ld (hl), d
-	inc hl
+	inc l
 	ld (hl), e
 	ld a, (ndirtyrects)
 	inc a
@@ -407,13 +455,13 @@ RedrawInvTiles:
 dirtyrectloop:
 	push bc
 	ld b, (hl)		; Xmin
-	inc hl
+	inc l				;esta alineado en memoria podemos hacer inc L y ahorramos 8 t-states
 	ld c, (hl)		; Ymin
-	inc hl
+	inc l
 	ld d, (hl)		; Xcount
-	inc hl
+	inc l
 	ld e, (hl)		; Ycount
-	inc hl
+	inc l
 	push hl			; save pointer
 
 dirty_y_loop:
@@ -574,7 +622,7 @@ UpdateSuperTile:
     ex af, af'
     ld a, b
     add a, b
-    ld b, a         ; Multiply Y by two to get to tile coordinates
+    ld b, a         ; Multiply X by two to get to tile coordinates
     ld a, c
     add a, c        ; Multiply Y by two to get to tile coordinates. 
     ld c, a
@@ -583,13 +631,12 @@ UpdateSuperTile:
 ;    ld d, 2
 ;    ld e, 2
 	ld de, $0202
-    push bc			;<<<<<<<<<<<
+ ;   push bc			;<<<<<<<<<<<
     call InvalidateTiles	; Invalidate tiles
-	pop bc				;<<<<<<<<<<<
-	jp AnimStile_CheckSprites
+;	pop bc				;<<<<<<<<<<<
+;	jp AnimStile_CheckSprites <<<<<<< hemos movido el simulated sprite al final no hace falta el JP
 ;	call AnimStile_CheckSprites ; Check overlapping sprites
 ;	ret
-
 
 
 ; Check if animated stile overlaps with sprites
@@ -600,27 +647,40 @@ UpdateSuperTile:
 
 ; We will abuse the sprite routines...
 
-simulatedsprite: ds 7
 
 AnimStile_CheckSprites:
 	ld ix, simulatedsprite
-	ld a, b
-	rlca
-	rlca
-	rlca
-	and $f8
-	ld (ix+3), a	; xmin
-	ld a, c
-	rlca
-	rlca
-	rlca
-	and $f8
-	ld (ix+4), a	; ymin
-	ld (ix+5), 2	; number of chars used in X
-	ld (ix+6), 2	; number of chars used in Y
+;	ld a, b			;4
+;	rlca			;4
+;	rlca			;4
+;	rlca			;4
+;	and $f8			;7
+;	ld (ix+3), a	; xmin
+;	ld a, c			;4
+;	rlca			;4
+;	rlca			;4
+;	rlca			;4
+;	and $f8			;7
+;	ld (ix+4), a	; ymin
+;					46
+	
+	ld h, b			;4
+	ld l, c			;4
+	add hl,bc		;11
+	add hl,hl		;11
+	add hl,hl		;11
+	ld (ix+3), h	; xmin
+	ld (ix+4), l	; ymin
+;					41 ahorramos 5 t-states 
+
+	ld (ix+5), d	; number of chars used in X
+	ld (ix+6), e	; number of chars used in Y
 	jp MarkOverlappingSprites
 ;    call MarkOverlappingSprites
 ;	ret
+
+simulatedsprite: ds 7
+
 
 ; Get the value for the tile in the hardness map
 ;
@@ -782,19 +842,30 @@ empty_supertile:
 ;	- C: Y in chars
 
 print_char:
-	sub 32		; first char is number 32
-	
-	ld e, a
-	ld d, 0
-	rl e
-	rl d
-	rl e
-	rl d
-	rl e
-	rl d		; Char*8, to get to the first byte
-	ld hl, FONT_IN_RAM6
-	add hl, de	; HL points to the first byte
-	ex de, hl	; DE points to the first byte
+;	sub 32				;7 first char is number 32
+;	ld e, a				;4
+;	ld d, 0				;7
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8
+;	rl e				;8
+;	rl d				;8 Char*8, to get to the first byte
+;	ld hl, FONT_IN_RAM6	;10
+;	add hl, de			;11 HL points to the first byte
+;	ex de, hl			;4 DE points to the first byte
+	;					91 total 
+
+	ld l, a 					;4
+	ld h, 0						;7
+	add hl,hl					;11 duplicamos HL (x2)
+	add hl,hl					;11 duplicamos HL (x4 en total)
+	add hl,hl					;11 duplicamos HL (x8 en total)
+	ld a, high FONT_IN_RAM6 - 1			;7
+	add a, h					;4
+	ld d, a 					;4
+	ld e, l						;4
+	;							63 total
 
 print_char_go:
 	ld a, (rombank)		;Sistem var with the previous value
@@ -804,24 +875,25 @@ print_char_go:
 	pop bc
 
 	ld hl, TileScAddress	; address table
-	ld a, c
-	add a,c			; C = 2*Y, to address the table
-	ld c,a
-	ld a, b			; A = X
-	ld b,0			; Clear B for the addition
-	add hl, bc		; hl = address of the first tile
+;	ld a, c					;4 
+;	add a, c				;4  C = 2*Y, to address the table
+;	ld c, a					;4
+	ld a, b					; A = X
+	ld b, 0					; Clear B for the addition
+	add hl, bc				;11	ahorramos 1t-state y 2 bytes :)
+	add hl, bc				; hl = address of the first tile
 	ld c, (hl)
-	inc hl
-	ld b, (hl)		; BC = Address
-	ld l,a			; hl = X
+	inc l
+	ld b, (hl)				; BC = Address
+	ld l, a					; hl = X
 	ld h, 0
-	add hl, bc		; hl = tile address in video memory
+	add hl, bc				; hl = tile address in video memory
 
 	ld b, 8
 print_char_loop:
 	ld a, (de)
 	ld (hl), a
-	inc de			; FIXME! will be able to do INC E, when FONTS is aligned in memory
+	inc e			; FIXME! will be able to do INC E, when FONTS is aligned in memory
 	inc h
 	djnz print_char_loop
 	pop af
@@ -832,30 +904,4 @@ print_char_loop:
 	ret
 
 
-FONT_IN_RAM6:  EQU $1C72
-	
-TileScAddress:	; Screen address for each tile start, considering it starts on $4000
-	dw 16384 ; Y = 0
-	dw 16416 ; Y = 1
-	dw 16448 ; Y = 2
-	dw 16480 ; Y = 3
-	dw 16512 ; Y = 4
-	dw 16544 ; Y = 5
-	dw 16576 ; Y = 6
-	dw 16608 ; Y = 7
-	dw 18432 ; Y = 8
-	dw 18464 ; Y = 9
-	dw 18496 ; Y = 10
-	dw 18528 ; Y = 11
-	dw 18560 ; Y = 12
-	dw 18592 ; Y = 13
-	dw 18624 ; Y = 14
-	dw 18656 ; Y = 15
-	dw 20480 ; Y = 16
-	dw 20512 ; Y = 17
-	dw 20544 ; Y = 18
-	dw 20576 ; Y = 19
-	dw 20608 ; Y = 20
-	dw 20640 ; Y = 21
-	dw 20672 ; Y = 22
-	dw 20704 ; Y = 23
+FONT_IN_RAM6:  EQU $1D00
