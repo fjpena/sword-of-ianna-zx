@@ -3,13 +3,22 @@ all: ianna-3dos.dsk sword.hdf ianna-cart.rom ianna-dan.rom ianna-if2.rom
 # ianna-sect.dsk vendrá cuando todo esté listo :)
 
 clean: 
-	rm *.tzx
-	rm *.bin
-	rm *.sym
-	rm *.o
-	rm *~
+	rm -f *.bin
+	rm -f *.sym
+	rm -f *.cmp
+	rm -f *~
 	rm -f *.pck
 	rm -f *.rom
+	rm -f *.hdf
+	rm -f *.tzx
+	rm -f *.dsk
+	rm -f *.tap
+	rm -f *.dat
+	rm -f ianna.spr
+	rm -f diskload.bin.zxb
+	rm -f ianna.gam
+	rm -f loader
+	rm -f disk
 
 #ianna.tzx: ianna.bin map.bin
 #	export PACKER=/usr/local/bin/apack; buildtzx -l 1 -i template.txt -o ianna.tzx -n "SwordOfIanna"
@@ -44,14 +53,15 @@ sword.hdf: ianna-esxdos.bin level1.map level2.map level3.map level4.map level5.m
 	hdfmonkey format sword.hdf Ianna
 	hdfmonkey mkdir sword.hdf sword
 	hdfmonkey put sword.hdf esxdos/*    /
-	hdfmonkey put sword.hdf loader      /sword
+	hdfmonkey put sword.hdf loader      /sword/loader.bas
 	hdfmonkey put sword.hdf ianna.spr   /sword
 	hdfmonkey put sword.hdf ianna.dat   /sword
 	hdfmonkey put sword.hdf ianna2.dat  /sword
 	hdfmonkey put sword.hdf ianna.gam   /sword
 	hdfmonkey put sword.hdf esxload.bin /sword
 	hdfmonkey put sword.hdf intro.bin   /sword
-	cp loader iannasd/loader
+	mkdir -p iannasd
+	cp loader iannasd/loader.bas
 	cp ianna.spr iannasd/ianna.spr
 	cp ianna.dat iannasd/ianna.dat
 	cp ianna2.dat iannasd/ianna2.dat
