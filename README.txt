@@ -30,12 +30,13 @@ some tools to build:
   (http://www.seasip.info/ZX/taptools-1.0.8.tar.gz). Make sure libdsk
   (http://www.seasip.info/Unix/LibDsk/) is installed before you try compiling
   the utilities.
-- zmakebas (http://rus.members.beeb.net/zmakebas.html)
+- zmakebas (https://github.com/z00m128/zmakebas)
 - The apack compressor. I use the version from http://www.smspower.org/maxim/uploads/SMSSoftware/aplib12.zip?sid=23bcb2a72f8a461be5cad0f46f7c3681,
   renamed to "apack" and run via Wine.
 - The fill16k utility, from the tools/ directory.
 - hdfmonkey for the ESXDOS virtual disk file (https://github.com/gasman/hdfmonkey)
 - dskgen for an unfinished +3 sector-based loader (https://github.com/AugustoRuiz/dskgen)
+- gentap for the TAP version. Compile it from the gentap.src directory.
 
 If you want to make modifications, you will realize there are quite a few
 hardcoded values in each io-* file, as well as inside some other asm files.

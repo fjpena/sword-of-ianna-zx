@@ -19,3 +19,7 @@ ENDIF
 IF IO_DRIVER=5
 INCLUDE "io-if2.asm"
 ENDIF
+
+IF IO_DRIVER=6
+INCLUDE "io-tap.asm"
+ENDIF

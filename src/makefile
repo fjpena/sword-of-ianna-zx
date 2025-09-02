@@ -1,4 +1,5 @@
-all: ianna-3dos.dsk sword.hdf ianna-cart.rom ianna-dan.rom ianna-if2.rom
+
+all:  ianna.tap ianna-3dos.dsk sword.hdf ianna-cart.rom ianna-dan.rom ianna-if2.rom
 
 # ianna-sect.dsk vendrá cuando todo esté listo :)
 
@@ -19,11 +20,35 @@ clean:
 	rm -f ianna.gam
 	rm -f loader
 	rm -f disk
+	rm -f *.file
 
 #ianna.tzx: ianna.bin map.bin
 #	export PACKER=/usr/local/bin/apack; buildtzx -l 1 -i template.txt -o ianna.tzx -n "SwordOfIanna"
 
-ianna-3dos.dsk: ianna-3dos.bin level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ram3.bin diskload.bin.zxb disk  ianna.spr menu.asm marcador.scr menu_screen.cmp barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp intro.asm intro.bin loading.scr
+ianna.tap: ianna-tap.bin level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ram3.bin ianna.spr menu.asm marcador.scr menu_screen.cmp barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp intro.asm intro.bin loading.scr sizes_files.sym loader_tap
+	cat ianna-tap.sym > ianna.sym
+	pasmo menu.asm menu.bin menu-tap.sym
+	cat ianna-tap.bin > ianna.bin
+	cat SwordOfIanna.tap > SwordOfIanna_Full.tap
+	./gentap --out SwordOfIanna.tap 255 loading.scr 255 ram3.bin 255 menu.bin 255 ianna.bin	10 level1.map 11 level2.map 12 level3.map 13 level4.map 14 level5.map 15 level6.map 16 level7.map 17 level8.map 18 level0.map 19 level9.map 20 sprite_esqueleto.cmp 21 sprite_orc.cmp 22 sprite_mummy.cmp 23 sprite_troll.cmp 24 sprite_rollingstone.cmp 25 sprite_caballerorenegado.cmp 26 sprite_dalgurak.cmp 27 sprite_golem_inf.cmp 28 sprite_ogro_inf.cmp 29 sprite_minotauro_inf.cmp 30 sprite_demonio_inf.cmp 31 sprite_golem_sup.cmp 32 sprite_ogro_sup.cmp 33 sprite_minotauro_sup.cmp 34 sprite_demonio_sup.cmp 40 intro_marco.cmp 41 intro_screens.file 42 intro_end.file 43 credits.cmp 44 music-intro.mus 45 music-end.mus 46 music-credits.mus
+	./gentap --out SwordOfIanna_Full.tap 255 loading.scr 255 ram3.bin 255 menu.bin 255 ianna.bin 18 level0.map 20 sprite_esqueleto.cmp 21 sprite_orc.cmp 22 sprite_mummy.cmp 23 sprite_troll.cmp 24 sprite_rollingstone.cmp 44 music-intro.mus 40 intro_marco.cmp 41 intro_screens.file 10 level1.map 20 sprite_esqueleto.cmp 21 sprite_orc.cmp 22 sprite_mummy.cmp 24 sprite_rollingstone.cmp 11 level2.map 20 sprite_esqueleto.cmp 21 sprite_orc.cmp 23 sprite_troll.cmp 24 sprite_rollingstone.cmp 27 sprite_golem_inf.cmp 31 sprite_golem_sup.cmp 12 level3.map 21 sprite_orc.cmp 23 sprite_troll.cmp 24 sprite_rollingstone.cmp 25 sprite_caballerorenegado.cmp 28 sprite_ogro_inf.cmp 32 sprite_ogro_sup.cmp 13 level4.map 20 sprite_esqueleto.cmp 21 sprite_orc.cmp 22 sprite_mummy.cmp 25 sprite_caballerorenegado.cmp 29 sprite_minotauro_inf.cmp 30 sprite_demonio_inf.cmp 33 sprite_minotauro_sup.cmp 34 sprite_demonio_sup.cmp 14 level5.map 20 sprite_esqueleto.cmp 23 sprite_troll.cmp 25 sprite_caballerorenegado.cmp 27 sprite_golem_inf.cmp 31 sprite_golem_sup.cmp 15 level6.map 20 sprite_esqueleto.cmp 21 sprite_orc.cmp 23 sprite_troll.cmp 25 sprite_caballerorenegado.cmp 29 sprite_minotauro_inf.cmp 30 sprite_demonio_inf.cmp 33 sprite_minotauro_sup.cmp 34 sprite_demonio_sup.cmp 16 level7.map 20 sprite_esqueleto.cmp 17 level8.map 23 sprite_troll.cmp 25 sprite_caballerorenegado.cmp 26 sprite_dalgurak.cmp 27 sprite_golem_inf.cmp 30 sprite_demonio_inf.cmp 31 sprite_golem_sup.cmp 34 sprite_demonio_sup.cmp 19 level9.map 23 sprite_troll.cmp 28 sprite_ogro_inf.cmp 32 sprite_ogro_sup.cmp 45 music-end.mus 42 intro_end.file 46 music-credits.mus 43 credits.cmp
+
+sizes_files.sym: level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ianna.spr intro.bin sizes_files.asm
+	cat intro01a.px.cmp intro02a.px.cmp intro03a.px.cmp intro04a.px.cmp intro05a.px.cmp intro01a.at.cmp intro02a.at.cmp intro03a.at.cmp intro04a.at.cmp intro05a.at.cmp > intro_screens.file
+	cat intro02a.px.cmp final02a.px.cmp final03a.px.cmp intro02a.at.cmp final02a.at.cmp final03a.at.cmp > intro_end.file
+	pasmo sizes_files.asm nul.bin sizes_files.sym
+
+loader_tap:
+	zmakebas -a 10 -n IANNA -o SwordOfIanna.tap loader_tap.bas
+	apack 48k.scr 48k.cmp 
+	pasmo tapeload.asm tapeload.bin 
+	./gentap --out SwordOfIanna.tap --name loader --addr 0x5e24 0xFF tapeload.bin
+
+ianna-tap.bin: ianna.asm tiles.asm drawsprite.asm input.asm im2.asm rambank.asm entities.asm scripts.asm sprite.asm sprite_barbaro.asm sprite_esqueleto.asm objects.asm depack.asm sizes_files.sym io-tap.asm ram3.sym music.asm score.asm io.asm 
+	pasmo -E IO_DRIVER=6 ianna.asm ianna-tap.bin ianna-tap.sym
+
+
+ianna-3dos.dsk: sizes_files.sym ianna-3dos.bin level1.map level2.map level3.map level4.map level5.map level6.map level7.map level8.map level9.map level0.map ram3.bin diskload.bin.zxb disk  ianna.spr menu.asm marcador.scr menu_screen.cmp barbaro_sword.cmp barbaro_eclipse.cmp barbaro_axe.cmp barbaro_blade.cmp intro.asm intro.bin loading.scr
 	cat ianna-3dos.sym > ianna.sym
 	pasmo menu.asm menu.bin menu-3dos.sym
 	cat ianna-3dos.bin > ianna.bin
@@ -68,6 +93,7 @@ sword.hdf: ianna-esxdos.bin level1.map level2.map level3.map level4.map level5.m
 	cp ianna.gam iannasd/ianna.gam
 	cp esxload.bin iannasd/esxload.bin
 	cp intro.bin iannasd/intro.bin
+
 
 stage2.bin: diskload-sect.asm
 	pasmo diskload-sect.asm stage2.bin
