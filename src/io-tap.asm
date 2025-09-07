@@ -227,13 +227,15 @@ LD_BYTES
 	di 
 	ld   a, 8
 	out  (#FE), a
-	in   a, (#FE)
-	rra 
-	and  32 
-	or   2
-	ld   c, a 
-	cp   a  
-	jp   #56B		;LD_BREAK 1387
+	jp   #562		;sin hacer el PUSH HL a #53F
+
+;	in   a, (#FE)
+;	rra 
+;	and  32 
+;	or   2
+;	ld   c, a 
+;	cp   a  
+;	jp   #56B		;LD_BREAK 1387
 
 	;ajuste de tamaño a la rutina IO-3Dos
 	ds   466  - $ + level_data  , 0
