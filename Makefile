@@ -1,4 +1,4 @@
-IMAGE_NAME      ?= sword-of-ianna-builder
+IMAGE_NAME      ?= localhost/sword-of-ianna-builder
 DOCKER_PLATFORM ?= linux/amd64
 BUILD_DIR       := build
 SRC_DIR         := src
@@ -16,7 +16,7 @@ image:
 
 build: image
 	docker run --rm --platform $(DOCKER_PLATFORM) --entrypoint /bin/bash \
-		-v $(CURDIR):/src $(IMAGE_NAME) \
+		-v $(CURDIR):/src:Z $(IMAGE_NAME) \
 		-c 'ln -sf /usr/local/bin/gentap /src/src/gentap && cd /src/src && make all'
 	$(MAKE) collect
 

@@ -1,3 +1,4 @@
+# If using Podman instead of Docker, comment out the line below
 ARG TARGETPLATFORM=linux/amd64
 FROM --platform=${TARGETPLATFORM} ubuntu:22.04
 
